@@ -26,7 +26,9 @@ At each gate: open a PR, summarise in plain language, list the decisions you nee
 
 - One ticket per PR. Aim for under 300 changed lines.
 - Label a PR `minor` only for fixes, copy, tests or small additions inside already-approved scope.
-- Until Shawn confirms otherwise in writing, nothing merges without his review, `minor` included.
+- A `minor` PR may be merged without Shawn's review once CI is green. This applies only after the CI workflow (lint, type check and tests) exists and runs on every PR. Before that, nothing merges without Shawn.
+- Never merge a PR whose checks are failing, pending or skipped. Never weaken, skip or delete a test or check to make a PR green.
+- List every `minor` PR merged without review in `docs/STATUS.md`, so Shawn can skim them weekly.
 - Anything that changes scope, direction, dependencies, the public API or a major version is never `minor`.
 
 ## Engineering rules
