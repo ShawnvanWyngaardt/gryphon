@@ -1,6 +1,6 @@
 # 0004. How we scan source files
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-15
 - Deciders: Shawn (product owner), Claude Code (engineer)
 
