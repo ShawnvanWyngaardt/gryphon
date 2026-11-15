@@ -66,7 +66,7 @@ typography:
     letterSpacing: 0.02em
   label-caps:
     fontFamily: Atkinson Hyperlegible Next
-    fontSize: 12px
+    fontSize: 13px
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: 0.08em
@@ -216,6 +216,7 @@ One superfamily, chosen for legibility: **Atkinson Hyperlegible Next** for inter
 - **Headlines (headline-lg, -md, -sm):** Bold, tight line height, used sparingly. One headline-lg per page at most.
 - **Body (body-lg, -md, -sm):** Regular at 16px by default. body-lg for docs prose, body-sm for dense report rows.
 - **Labels (label-md, label-caps):** Bold. label-caps is for severity badges and section eyebrows, uppercase with generous tracking.
+- **Minimum size is 13px.** Nothing is set smaller. All-caps text is harder to read than mixed case, because every letter has the same height and words lose their shape. At 13px the capitals of label-caps stand about as tall as the lowercase letters of 16px body text, so badges stay readable without shouting. We stop at 13px rather than 14px so badges stay visibly different from 14px body-sm in dense report rows.
 - **Code (code-md, code-sm):** All code, file paths, token names and values. Never set code in the sans.
 
 Fonts are self-hosted. The site makes no requests to font CDNs, because the product promises that nothing leaves the browser.
