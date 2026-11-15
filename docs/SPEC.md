@@ -284,7 +284,7 @@ These are not v1. Each needs its own spec update and approval before work starts
 - NFR-D4 Tests are written before code for the parser and the scanner.
 - NFR-D5 CONTRIBUTING.md explains setup, scripts, the PR process and the gates.
 - NFR-D6 Every architectural decision has an ADR in `docs/adr/`.
-- NFR-D7 Supported Node versions: current LTS lines only (22 and 24 as of today). **Added:** Node 18 and 20 are end of life, so supporting them adds cost with no benefit.
+- NFR-D7 Supported Node versions: current LTS lines only: 22 (from 22.13), 24 and 26 as of 15 November 2026. CI tests all three. **Added:** Node 18 and 20 are end of life, so supporting them adds cost with no benefit.
 
 ### Cost (NFR-C)
 
@@ -295,7 +295,7 @@ These are not v1. Each needs its own spec update and approval before work starts
 
 1. Playground live on a public URL.
 2. npm package published with provenance.
-3. At least 3 real users. **Proposed definition:** a person other than Shawn who ran the tool on their own project (not a demo repo) and gave written feedback (issue, discussion, message). Logged in `docs/FEEDBACK.md`.
+3. At least 3 real users, **at least 2 of them not Shawn** (decided at Gate 2). A real user ran the tool on their own project (not a demo repo) and gave written feedback (issue, discussion or message). Shawn counts through his own project, the club shift scheduler. Each user is logged in `docs/FEEDBACK.md`.
 4. Case study written.
 
 ## 8. Risks
@@ -360,7 +360,7 @@ All decisions below were made by Shawn when approving Gate 1 on 15 November 2026
 1. **Docs:** keep the reduced version (README plus three generated examples, FR8).
 2. **`raw-token-value`:** warning by default.
 3. **Tailwind:** v4 `@theme` only. v3 projects get the default theme. Never execute a config file (NFR-S4).
-4. **Real users:** Shawn, via the club shift scheduler, plus two others Shawn will name before Gate 5. **Open conflict:** section 7 defines a real user as "a person other than Shawn". These two do not agree yet. See the Gate 2 PR.
+4. **Real users:** at least 3, at least 2 of them not Shawn (settled at Gate 2, replacing the Gate 1 wording). Shawn counts through the club shift scheduler. He names the other users before Gate 5. Section 7 matches.
 5. **Light and dark tokens:** keep the `dark-` prefix until the spec adds modes.
 6. **Fonts:** Atkinson Hyperlegible Next and Mono, self-hosted: approved.
 

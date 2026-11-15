@@ -1,6 +1,6 @@
 # 0006. Hosting, CSP and release pipeline
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-15
 - Deciders: Shawn (product owner), Claude Code (engineer)
 - Related: SPEC section 9, decisions B and C (approved in Gate 1)

@@ -1,6 +1,6 @@
 # 0005. Matching values to tokens
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-15
 - Deciders: Shawn (product owner), Claude Code (engineer)
 

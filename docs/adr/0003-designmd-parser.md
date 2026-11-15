@@ -1,6 +1,6 @@
 # 0003. DESIGN.md parser
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-15
 - Deciders: Shawn (product owner), Claude Code (engineer)
 - Related: SPEC section 9, decision A (approved in Gate 1)

@@ -1,6 +1,6 @@
 # 0002. Repo layout and toolchain
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-15
 - Deciders: Shawn (product owner), Claude Code (engineer)
 
@@ -37,11 +37,25 @@ docs/                   spec, ADRs, status
 ```
 
 - **The browser-safe boundary is enforced by a lint rule:** `src/core` may not import `node:*` modules, `fs` or `process`. File reading happens in the CLI and the Action, which pass text into the core.
-- **Node 22.13 or newer.** ESLint 10 and Vite 8 require it. Node 22 and 24 are the LTS lines today.
+- **Node on an LTS line, at least 22.13:** `^22.13.0 || ^24.0.0 || >=26.0.0`. ESLint 10 needs 22.13. Vite 8 needs 22.12. Vitest 5 does not support Node 23 or 25. Node 22, 24 and 26 are the LTS lines today.
 - **TypeScript 6.0.x, pinned, strict.** Not 7.0. TypeScript 7 is the new native compiler, and typescript-eslint supports only TypeScript below 6.1 today, so 7.0 would break linting. We move to 7 when the lint tooling supports it.
 - **ESM only.** No CommonJS build.
 - **Tools:** npm workspaces, Vitest with V8 coverage, ESLint with typescript-eslint and eslint-plugin-vue, Prettier, vue-tsc for the playground, esbuild to bundle the Action (ADR 0006).
 - All versions are pinned exactly, with one committed lockfile (NFR-S3).
+
+## Versions confirmed (G3-01, 15 November 2026)
+
+Checked with `npm view` and the official Node release index, as Shawn asked when approving Gate 2.
+
+| Tool | ADR said | Confirmed | Note |
+| --- | --- | --- | --- |
+| Node | 22.13+, LTS lines 22 and 24 | 22.13+, LTS lines **22, 24 and 26** | Node 26 became LTS in October 2026. Corrected above. |
+| ESLint | 10 | 10.15.0, needs Node `^22.13.0` or `>=24` | Correct. |
+| Vite | 8, needs 22.13 | 8.3.8, needs Node `>=22.12.0` | The 22.13 floor comes from ESLint, not Vite. Corrected above. |
+| TypeScript | 6.0.x, not 7 | 6.0.3 pinned. `latest` is 7.0.2. typescript-eslint 8.72.2 supports `<6.1.0` | Correct. |
+| Vitest | (not stated) | 5.1.0, needs Node `^22.12.0`, `^24` or `>=26` | Added the odd-version exclusion above. |
+
+Correction note: ADR 0001 says accepted ADRs are only edited for typos. These are factual corrections that Shawn asked for in the Gate 2 approval, so they are made here with this note, not in a new ADR. The decisions themselves did not change.
 
 ## What we give up
 

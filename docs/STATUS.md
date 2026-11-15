@@ -4,24 +4,20 @@ Last updated: 2026-11-15
 
 ## Done
 
-- **Gate 1 approved and merged** (PR 1). Decisions recorded in `docs/SPEC.md` section 9.
-- Gate 2 drafts: ADRs 0002 to 0006 (backlog G2-01 to G2-05) in one PR, as Shawn asked.
-  - 0002 repo layout and toolchain
-  - 0003 DESIGN.md parser
-  - 0004 scanning approach
-  - 0005 matching values to tokens
-  - 0006 hosting, CSP and release pipeline
+- Gate 1 approved and merged (PR 1).
+- Gate 2 approved and merged (PR 2). ADRs 0001 to 0006 marked Accepted.
+- G3-01 scaffold (in review): npm workspaces, TypeScript 6.0.3 strict, ESLint with the browser-safety rule for `src/core`, Prettier, Vitest with 80% coverage floors on the parser and scanner folders. Tool versions confirmed with `npm view`; ADR 0002 corrected. SPEC real-user wording fixed.
 
 ## Next
 
-- Shawn reviews the Gate 2 PR and approves the five ADRs as a whole.
-- After approval: Gate 3, starting with G3-01 (scaffold) and G3-02 (CI workflow).
+- Shawn reviews G3-01, then G3-02 (CI workflow), which is stacked on it.
+- After both merge: G3-03 (core types).
 
 ## Blocked
 
-- Gate 3 is blocked on Gate 2 approval.
-- Open conflict for Shawn: SPEC section 7 says a real user is "a person other than Shawn", but the Gate 1 answer counts Shawn as one of the three. Needs one wording before Gate 5.
-- Google's linter printed nothing and exited 0 on our DESIGN.md (Shawn's local run). Unexplained. To be investigated first thing in G3-06.
+- `minor` PRs cannot merge without review until G3-02 (CI) is merged.
+- Decision needed in G3-01: accept a moderate, dev-only `minimatch` advisory inside typescript-eslint, or force a newer version with an override. See the G3-01 PR.
+- Google's linter printed nothing on our DESIGN.md (Shawn's local run). Still to investigate in G3-06.
 
 ## Minor PRs merged without review
 

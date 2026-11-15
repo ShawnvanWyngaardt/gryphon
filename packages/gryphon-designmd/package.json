@@ -1,0 +1,14 @@
+{
+  "name": "gryphon-designmd",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Checks UI code against the design tokens in a DESIGN.md file.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
+  },
+  "exports": {
+    ".": "./src/core/index.ts"
+  }
+}

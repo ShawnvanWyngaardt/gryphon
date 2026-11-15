@@ -1,0 +1,4 @@
+# Docs are hand-formatted. Prettier would realign every table.
+*.md
+package-lock.json
+coverage
