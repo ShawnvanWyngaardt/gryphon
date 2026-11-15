@@ -328,52 +328,44 @@ If it happens, the core idea (read DESIGN.md, flag off-token values in code) sto
 
 ## 9. Decisions
 
-### Answered in the Gate 1 review
+All decisions below were made by Shawn when approving Gate 1 on 15 November 2026 (PR 1). The reasoning behind A to C is kept so the choices can be explained later.
+
+### Scope
 
 - Proceed or pivot: **proceed** with the narrower pitch.
 - AI trope rules: **cut from v1**, moved to "Later".
 - v1 scope: CSS and SCSS, Vue and Tailwind scanners, CLI, GitHub Action, minimal playground.
 - Repo visibility: **public** (checked 15 November 2026), so GitHub Actions minutes and GitHub Pages are free.
 
-### Recommendations for Shawn to decide
-
-One recommendation each, with the reasoning and what we give up.
-
-**A. Parser: write our own small parser, and test it against Google's.**
+### A. Parser: our own, tested against Google's in CI (approved)
 
 - Our parser uses one runtime dependency, `yaml`, to read the front matter, plus our own code for references, units and colours. Markdown prose is only split into `##` sections, which needs no Markdown library.
-- `@google/design.md` is added as a **dev dependency only**. A CI test runs Google's linter and our parser on the same files (Google's examples and ours) and fails if the token sets differ. That catches spec drift without shipping Google's code.
-- Why not reuse Google's parser at runtime: it has 9 direct dependencies (unified, remark-parse, remark-frontmatter, remark-mdx, remark-stringify, unist-util-visit, yaml, zod, citty), and the remark family pulls in many more [Likely: I listed the direct ones from its package.json, not the full tree]. Every one of them ends up in the playground bundle (budget 150 KB) and in our security review. It also turns "tests first for the parser" into testing someone else's code.
+- `@google/design.md` is a **dev dependency only**. A CI test runs Google's code and our parser on the same files and fails if the token sets differ. Details in ADR 0003.
+- Why not reuse Google's parser at runtime: 9 direct dependencies (unified, remark-parse, remark-frontmatter, remark-mdx, remark-stringify, unist-util-visit, yaml, zod, citty), plus their transitive ones. All of them would land in the playground bundle (150 KB budget) and in every security review.
 - What we give up: when the alpha spec changes, we update our parser by hand. The CI comparison test tells us when.
 
-**B. npm name: `gryphon-designmd`.**
+### B. npm name: `gryphon-designmd` (approved)
 
-- `gryphon` is taken [Certain]: a single version 0.0.0, published in 2014, described as "Public-key auth stuff", last changed 2022. npm has a dispute process for unused names, but it is slow and the outcome is not ours to control.
-- `gryphon-designmd` returned 404 from the registry on 15 November 2026, so it is free [Likely: npm can still refuse a name at publish time, but it is not close to any existing name I found].
-- It says what the tool is for, and people searching npm for "designmd" will find it.
-- The command can still be called `gryphon`: the package's `bin` name is separate from its package name. Users would run `npx gryphon-designmd check` once, or `gryphon check` after installing.
-- What we give up: a short, brandable name. There is also a family of unrelated `@polleoai/gryphon-*` packages, so plain "gryphon" would have been confusing anyway.
-- Note: the name is not reserved until we publish. Publishing a placeholder now would reserve it, but it is a public action, so it waits for your go.
+- `gryphon` is taken by an unrelated 0.0.0 placeholder from 2014. `gryphon-designmd` was free on 15 November 2026.
+- The command users type can still be `gryphon` (the `bin` name).
+- **No placeholder publish until Gate 5.** Until then the name is not reserved, and we accept the small risk that someone takes it.
 
-**C. Hosting: GitHub Pages.**
+### C. Hosting: GitHub Pages (approved)
 
-- Free for a public repo, deployed by the official GitHub Pages Actions, in the same place as the code. No new account and no extra company with access to the project.
-- **I changed my earlier lean (Cloudflare Pages).** I had said GitHub Pages could not give us a real CSP. That was overstated. A CSP in a `<meta>` tag supports the directives we need (`default-src`, `script-src`, `connect-src 'none'`). It cannot set `frame-ancestors`, so another site could embed the playground in a frame. For a page with no login and no account actions, that risk is low.
-- What we give up: custom HTTP headers. If we ever need them, Cloudflare Pages is the fallback, and moving a static site is cheap.
+- Free for this public repo, deployed by GitHub's own Pages Actions, no new account.
+- The CSP is set in a `<meta>` tag. That supports `connect-src 'none'`, but not `frame-ancestors`. Details in ADR 0006.
 
-### Still open
+### Answers to the open questions
 
-1. **Docs:** your v1 list did not name the docs page. I kept a reduced version (README plus three generated examples, FR8) because users need some way to learn the tool. Keep it, or cut it?
-2. **`raw-token-value` default:** warning (my recommendation), error, or off?
-3. **Tailwind depth:** v4 `@theme` CSS only, and v3 projects get the default theme only? Executing a v3 `tailwind.config.js` would break NFR-S4. I recommend yes.
-4. **Real users:** do you agree with the definition in section 7? Who are your first three candidates?
-5. **Light and dark tokens:** our DESIGN.md uses a `dark-` prefix because the spec has no modes. I recommend keeping it until the spec adds modes.
-6. **Fonts:** Atkinson Hyperlegible Next and Mono, self-hosted under the SIL Open Font License. I recommend yes.
+1. **Docs:** keep the reduced version (README plus three generated examples, FR8).
+2. **`raw-token-value`:** warning by default.
+3. **Tailwind:** v4 `@theme` only. v3 projects get the default theme. Never execute a config file (NFR-S4).
+4. **Real users:** Shawn, via the club shift scheduler, plus two others Shawn will name before Gate 5. **Open conflict:** section 7 defines a real user as "a person other than Shawn". These two do not agree yet. See the Gate 2 PR.
+5. **Light and dark tokens:** keep the `dark-` prefix until the spec adds modes.
+6. **Fonts:** Atkinson Hyperlegible Next and Mono, self-hosted: approved.
 
-## 10. Notes for the reviewer
+## 10. Notes
 
-- **Google's linter has not been run on our DESIGN.md yet.** You asked me to run it. The session's safety check blocked it twice, because running a package freshly downloaded from npm counts as running untrusted code. I did not work around the block. To let me run it, add this allow rule to `.claude/settings.json` in the repo (under `permissions.allow`) and commit it, or approve it in your settings:
-  `Bash(npx -y @google/design.md@0.4.0 lint:*)`
-  I did not add that rule myself, because an agent should not grant its own permissions.
-- Meanwhile I re-ran my own check, written to follow the rules in Google's `spec-config.yaml` and README: no broken references, a `primary` colour present, typography present, spacing and rounded present, no orphaned colours, every component text and background pair at 4.5:1 or more, and sections in spec order. This is not Google's linter. The one known difference: Google's linter will warn on our three `borderColor` properties, because `borderColor` is not one of the spec's component properties.
-- Spec facts above come from the spec file shipped inside `@google/design.md@0.4.0`. The GitHub repo itself was not reachable from this session.
+- **Google's linter on our DESIGN.md:** Shawn ran `npx -y @google/design.md@0.4.0 lint DESIGN.md` locally on 15 November 2026. Exit code 0, **no output at all.** I had expected warnings for our three `borderColor` properties, and the README describes JSON output that always includes a summary. So empty output is itself unexpected. Investigate in G3-06 before we rely on Google's tool as a reference. ADR 0003 plans for this.
+- My own check, written to follow the rules in Google's `spec-config.yaml`, found no problems apart from the `borderColor` properties.
+- Spec facts above come from the spec file shipped inside `@google/design.md@0.4.0`. The GitHub repo itself was not reachable from the agent session.
