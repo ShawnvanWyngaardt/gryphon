@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ShawnvanWyngaardt/gryphon/blob/main/packages/gryphon-designmd/schema/report-v1.schema.json",
+  "title": "gryphon-designmd report, version 1",
+  "description": "Output of `gryphon check --format json`. A breaking change needs a new schemaVersion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "tool", "designFile", "summary", "findings", "skipped"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "gryphon-designmd" },
+        "version": { "type": "string" }
+      }
+    },
+    "designFile": { "type": "string" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "errors", "warnings", "suppressed", "skipped"],
+      "properties": {
+        "files": { "$ref": "#/$defs/count" },
+        "errors": { "$ref": "#/$defs/count" },
+        "warnings": { "$ref": "#/$defs/count" },
+        "suppressed": { "$ref": "#/$defs/count" },
+        "skipped": { "$ref": "#/$defs/count" }
+      }
+    },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "skipped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "reason"],
+        "properties": {
+          "file": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "position": { "type": "integer", "minimum": 1 },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "severity",
+        "file",
+        "line",
+        "column",
+        "property",
+        "value",
+        "category",
+        "nearest",
+        "fix",
+        "message"
+      ],
+      "properties": {
+        "rule": { "enum": ["off-token", "raw-token-value"] },
+        "severity": { "enum": ["error", "warning"] },
+        "file": { "type": "string" },
+        "line": { "$ref": "#/$defs/position" },
+        "column": { "$ref": "#/$defs/position" },
+        "property": { "type": "string" },
+        "value": { "type": "string" },
+        "category": { "enum": ["color", "fontFamily", "fontSize", "spacing", "radius"] },
+        "nearest": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "value", "distance"],
+              "properties": {
+                "path": { "type": "string" },
+                "value": { "type": "string" },
+                "distance": { "type": "number", "minimum": 0 }
+              }
+            }
+          ]
+        },
+        "fix": { "type": ["string", "null"] },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}
