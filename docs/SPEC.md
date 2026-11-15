@@ -326,6 +326,14 @@ If it happens, the core idea (read DESIGN.md, flag off-token values in code) sto
 
 **What we would do:** if Google's command covers plain CSS well, we make our scanner a thin layer on top of theirs, or contribute our Vue and Tailwind scanning upstream. We keep the playground and the Action as our own products. Keeping the parser and scanner behind small interfaces (Gate 2) keeps this switch cheap.
 
+### 8.2 Accepted risks
+
+Risks we know about and chose to live with. Each has an owner decision and a trigger to look again.
+
+| Risk | Decided | Why accepted | Look again when |
+| --- | --- | --- | --- |
+| `minimatch` 10.2.6 inside typescript-eslint has a moderate denial-of-service advisory ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)). The fix exists only in minimatch 11, which typescript-eslint does not accept yet. | Shawn, review of PR 3, 15 November 2026 | Dev-only tool, never shipped to users. It only sees glob patterns from our own lint config. Forcing minimatch 11 with an override would run the linter on a version it was not tested with. | typescript-eslint moves to minimatch 11 (Dependabot will propose it), or the advisory is raised above moderate. CI fails on high and critical advisories. |
+
 ## 9. Decisions
 
 All decisions below were made by Shawn when approving Gate 1 on 15 November 2026 (PR 1). The reasoning behind A to C is kept so the choices can be explained later.
