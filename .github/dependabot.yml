@@ -1,0 +1,29 @@
+# Dependency update PRs (requested in the review of PR 3).
+# Dependabot PRs change dependencies, so they are never `minor`
+# (CLAUDE.md) and always need Shawn's review.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Wait a week before proposing a new release, so a bad or
+    # compromised version has time to be noticed and pulled.
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      dev-tools:
+        dependency-type: development
+    commit-message:
+      prefix: deps
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
