@@ -25,3 +25,4 @@ Allowed since PR 4 (CI) merged and its four checks became required on `main`. Ea
 
 | Date | PR | Summary |
 | --- | --- | --- |
+| 2026-11-15 | #5 | Dependabot for npm and GitHub Actions; accepted minimatch risk documented in SPEC 8.2. |
