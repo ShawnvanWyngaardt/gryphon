@@ -1,6 +1,12 @@
 import { isMap, isScalar, LineCounter, parseDocument, type Node, type YAMLMap } from 'yaml';
 
 import type { Category, SourcePosition, Token, TokenSet } from '../types.js';
+import {
+  REFERENCE,
+  ReferenceProblem,
+  resolveReference,
+  type ReferenceProblemCode,
+} from './references.js';
 
 /** A `##` section of the Markdown body. */
 export interface Section {
@@ -14,7 +20,8 @@ export type ParseErrorCode =
   | 'unclosed-front-matter'
   | 'invalid-yaml'
   | 'invalid-front-matter'
-  | 'duplicate-section';
+  | 'duplicate-section'
+  | ReferenceProblemCode;
 
 /** A problem that stops the run (the CLI exits with code 2). */
 export interface ParseError {
@@ -90,7 +97,6 @@ const COMPONENT_PROPERTIES: Record<string, Category | null> = {
 const MAX_DEPTH = 20;
 
 const DIMENSION = /^(-?(\d+\.?\d*|\.\d+)(px|em|rem)|0)$/;
-const REFERENCE = /^\{.+\}$/;
 
 const NO_TOKENS = 'No design tokens found in DESIGN.md';
 
@@ -111,8 +117,8 @@ function splitLines(text: string): { text: string; start: number }[] {
  *
  * Front matter is read with `yaml`; the Markdown body is only split
  * into `##` sections, because we enforce tokens, not prose (ADR 0003).
- * References such as `{colors.primary}` are not resolved here (G3-05),
- * and values are not converted yet (G3-07).
+ * References such as `{colors.primary}` are followed to their final
+ * value. Values are not converted yet (G3-07).
  */
 export function parseDesignMd(input: string): ParseResult {
   const text = input.startsWith('﻿') ? input.slice(1) : input;
@@ -162,6 +168,7 @@ export function parseDesignMd(input: string): ParseResult {
     });
   }
 
+  const data: unknown = doc.toJS();
   const tokens: Token[] = [];
   const warnings: ParseWarning[] = [];
   const position = (node: Node | null | undefined): SourcePosition =>
@@ -174,19 +181,34 @@ export function parseDesignMd(input: string): ParseResult {
   ): void => {
     warnings.push({ code, message, path, position: position(node) });
   };
-  const addToken = (path: string, category: Category, node: Node): void => {
-    tokens.push({
-      path,
-      category,
-      value: isScalar(node) ? String(node.value) : '',
-      position: position(node),
-    });
+  const addToken = (path: string, category: Category, node: Node, value: string): void => {
+    tokens.push({ path, category, value, position: position(node) });
+  };
+
+  /**
+   * The value of a scalar, with references followed to the final value
+   * (AC1.2). Returns undefined for anything that is not a scalar.
+   * Throws ReferenceProblem for a broken, looping or too-deep reference.
+   */
+  const scalarValue = (path: string, node: Node | null): unknown => {
+    if (!isScalar(node)) return undefined;
+    const raw = node.value;
+    if (typeof raw === 'string' && REFERENCE.test(raw)) {
+      try {
+        return resolveReference(data, path, raw, false);
+      } catch (problem) {
+        if (problem instanceof ReferenceProblem) throw new PositionedProblem(problem, node);
+        throw problem;
+      }
+    }
+    return raw;
   };
 
   /** Adds a colour token, or warns. Unquoted hex like #fff is a YAML comment, so it arrives as null. */
   const colorValue = (path: string, node: Node | null): void => {
-    if (isScalar(node) && typeof node.value === 'string' && node.value !== '') {
-      addToken(path, 'color', node);
+    const value = scalarValue(path, node);
+    if (node !== null && typeof value === 'string' && value !== '') {
+      addToken(path, 'color', node, value);
     } else {
       warn(
         'invalid-value',
@@ -199,8 +221,13 @@ export function parseDesignMd(input: string): ParseResult {
 
   /** Adds a dimension token (px, em, rem, or 0), or warns. */
   const dimensionValue = (path: string, category: Category, node: Node | null): void => {
-    if (isScalar(node) && DIMENSION.test(String(node.value))) {
-      addToken(path, category, node);
+    const value = scalarValue(path, node);
+    if (
+      node !== null &&
+      (typeof value === 'string' || typeof value === 'number') &&
+      DIMENSION.test(String(value))
+    ) {
+      addToken(path, category, node, String(value));
     } else {
       warn(
         'not-a-dimension',
@@ -259,8 +286,9 @@ export function parseDesignMd(input: string): ParseResult {
       const key = isScalar(pair.key) ? String(pair.key.value) : '';
       const value = (pair.value ?? null) as Node | null;
       if (key === 'fontFamily') {
-        if (isScalar(value) && typeof value.value === 'string' && value.value !== '') {
-          addToken(`${path}.fontFamily`, 'fontFamily', value);
+        const family = scalarValue(`${path}.fontFamily`, value);
+        if (value !== null && typeof family === 'string' && family !== '') {
+          addToken(`${path}.fontFamily`, 'fontFamily', value, family);
         } else {
           warn(
             'invalid-value',
@@ -293,10 +321,19 @@ export function parseDesignMd(input: string): ParseResult {
         );
         continue;
       }
+      // A reference points at a token we already have. We only check that it
+      // resolves. Components may refer to a whole group, such as a typography level.
+      if (isScalar(value) && typeof value.value === 'string' && REFERENCE.test(value.value)) {
+        try {
+          resolveReference(data, propPath, value.value, true);
+        } catch (problem) {
+          if (problem instanceof ReferenceProblem) throw new PositionedProblem(problem, value);
+          throw problem;
+        }
+        continue;
+      }
       const category = COMPONENT_PROPERTIES[key];
-      // References point at tokens we already have (resolved in G3-05).
       if (category === null || category === undefined) continue;
-      if (isScalar(value) && REFERENCE.test(String(value.value))) continue;
       if (category === 'color') colorValue(propPath, value);
       else dimensionValue(propPath, category, value);
     }
@@ -304,25 +341,32 @@ export function parseDesignMd(input: string): ParseResult {
 
   let specVersion: string | undefined;
   let name: string | undefined;
-  for (const pair of doc.contents?.items ?? []) {
-    const key = isScalar(pair.key) ? String(pair.key.value) : '';
-    const value = (pair.value ?? null) as Node | null;
-    if (key === 'version' && isScalar(value)) specVersion = String(value.value);
-    else if (key === 'name' && isScalar(value)) name = String(value.value);
-    else if (!KNOWN_GROUPS.has(key)) {
-      warn(
-        'unknown-group',
-        key,
-        pair.key as Node,
-        `"${key}" is not a token group in the DESIGN.md spec. It is ignored.`,
-      );
-    } else if (isMap(value)) {
-      if (key === 'colors') walk(value, key, 1, colorValue);
-      else if (key === 'typography') walk(value, key, 1, typographyLevel, isTypographyLevel);
-      else if (key === 'rounded') walk(value, key, 1, (p, n) => dimensionValue(p, 'radius', n));
-      else if (key === 'spacing') walk(value, key, 1, (p, n) => dimensionValue(p, 'spacing', n));
-      else if (key === 'components') walk(value, key, 1, component, () => true);
+  try {
+    for (const pair of doc.contents?.items ?? []) {
+      const key = isScalar(pair.key) ? String(pair.key.value) : '';
+      const value = (pair.value ?? null) as Node | null;
+      if (key === 'version' && isScalar(value)) specVersion = String(value.value);
+      else if (key === 'name' && isScalar(value)) name = String(value.value);
+      else if (!KNOWN_GROUPS.has(key)) {
+        warn(
+          'unknown-group',
+          key,
+          pair.key as Node,
+          `"${key}" is not a token group in the DESIGN.md spec. It is ignored.`,
+        );
+      } else if (isMap(value)) {
+        if (key === 'colors') walk(value, key, 1, colorValue);
+        else if (key === 'typography') walk(value, key, 1, typographyLevel, isTypographyLevel);
+        else if (key === 'rounded') walk(value, key, 1, (p, n) => dimensionValue(p, 'radius', n));
+        else if (key === 'spacing') walk(value, key, 1, (p, n) => dimensionValue(p, 'spacing', n));
+        else if (key === 'components') walk(value, key, 1, component, () => true);
+      }
     }
+  } catch (problem) {
+    if (problem instanceof PositionedProblem) {
+      return fail(problem.problem.code, problem.problem.message, position(problem.node));
+    }
+    throw problem;
   }
 
   const sections = parseSections(lines.slice(closeIndex + 1), closeIndex + 2);
@@ -370,6 +414,16 @@ function parseSections(
     sections.push({ heading, line });
   }
   return { ok: true, sections };
+}
+
+/** A reference problem plus the YAML node where the reference is written. */
+class PositionedProblem extends Error {
+  constructor(
+    readonly problem: ReferenceProblem,
+    readonly node: Node,
+  ) {
+    super(problem.message);
+  }
 }
 
 function fail(code: ParseErrorCode, message: string, position?: SourcePosition): ParseFailure {
