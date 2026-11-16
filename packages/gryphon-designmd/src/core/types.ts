@@ -62,6 +62,12 @@ export interface Finding extends Occurrence {
   /** The suggested replacement, as text. Never applied automatically. */
   fix: string | null;
   message: string;
+  /**
+   * True when the comparison involved an `em` value. We measure em as if
+   * the parent font size were the root size, which a static checker
+   * cannot know for sure (review of PR 10).
+   */
+  approximate: boolean;
 }
 
 /** A file that could not be scanned (AC2.8). */

@@ -14,12 +14,13 @@ Last updated: 2026-11-15
 - G3-05 references (merged, PR 8): `{colors.primary}` and chains of references resolve to their final value; broken, looping, too-deep and group references stop the run with an error naming the token. Written tests first.
 - G3-06 parser comparison (merged, PR 9): CI compares our parser with Google's library on four DESIGN.md files. One known, explained difference. Google's empty CLI output is explained (SPEC section 10).
 - G3-07 value normalisers (merged, PR 10): every DESIGN.md colour format, including color-mix(), to 8-bit sRGB and OKLab; px, rem and em to px. Written tests first.
-- Draft GitHub issue for Google's design.md repo in `docs/drafts/google-issue.md` (minor PR, see table below). Shawn posts it himself.
+- Draft GitHub issue for Google's design.md repo in `docs/drafts/google-issue.md` (minor PR 11, see table below). Shawn posts it himself.
+- G3-08 matcher (in review): exact matches are `raw-token-value` warnings, others `off-token` errors with the nearest token (OKLab for colours, px within the same category for sizes). Findings that involve `em` are marked `approximate` (review of PR 10). Written tests first.
 
 ## Next
 
-- G3-08 matcher, including Shawn's follow-up from PR 10: findings based on `em` values are marked as approximate.
-- Then G3-09 CSS and SCSS scanner.
+- Shawn reviews G3-08 (not minor: new behaviour and a change to the JSON report schema).
+- G3-09 CSS and SCSS scanner is next. It produces occurrences and does not depend on the matcher, so it can start from `main`.
 - Open question from PR 9: did an editor pop up when Shawn ran Google's CLI? The answer decides whether section B of the issue draft stays.
 
 ## Blocked

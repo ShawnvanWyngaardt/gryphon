@@ -23,3 +23,5 @@ export type * from './types.js';
 export { parseColor } from './values/color.js';
 export type { NormalColor } from './values/color.js';
 export { parseDimension } from './values/dimension.js';
+export { createMatcher, FAR_COLOR, SAME_COLOR } from './matcher/match.js';
+export type { MatcherOptions } from './matcher/match.js';
