@@ -136,9 +136,10 @@ typography:
  * and explained: an unexplained difference is a bug in one of us.
  */
 const knownDifferences: Record<string, Comparable> = {
-  // Google 0.4.0 silently drops typography values written as references
-  // (no finding, no warning). The spec allows references to any
-  // primitive value, so we resolve them.
+  // Google 0.4.0 does not resolve references inside typography levels.
+  // A fontSize reference, as here, is dropped with no finding (fontFamily
+  // ones are kept as literal text). The spec allows references to any
+  // primitive value, so we resolve them. See docs/drafts/google-issue.md.
   references: { 'typography.body.fontSize': '16px' },
 };
 
