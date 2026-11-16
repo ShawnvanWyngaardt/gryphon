@@ -374,6 +374,8 @@ All decisions below were made by Shawn when approving Gate 1 on 15 November 2026
 
 ## 10. Notes
 
-- **Google's linter on our DESIGN.md:** Shawn ran `npx -y @google/design.md@0.4.0 lint DESIGN.md` locally on 15 November 2026. Exit code 0, **no output at all.** I had expected warnings for our three `borderColor` properties, and the README describes JSON output that always includes a summary. So empty output is itself unexpected. Investigate in G3-06 before we rely on Google's tool as a reference. ADR 0003 plans for this.
-- My own check, written to follow the rules in Google's `spec-config.yaml`, found no problems apart from the `borderColor` properties.
+- **Google's linter on our DESIGN.md (resolved in G3-06, 16 November 2026).** Shawn's local run of `npx -y @google/design.md@0.4.0 lint DESIGN.md` printed nothing and exited 0. Running Google's library on the same file gives: **0 errors, 3 warnings, 1 info**. The warnings are our three `borderColor` component properties, and the info is the token summary (23 colours, 10 typography levels, 3 radii, 10 spacing values, 18 components). So the file is fine, and the earlier run never reached the linter.
+  - Why it printed nothing: the CLI's `lint` command always prints JSON, so empty output means it never ran. Likely cause [Guessing, not reproduced]: the command is named `design.md`. On Windows, `cmd.exe` looks in the current folder before `PATH`, finds our `DESIGN.md` (Windows ignores case), and opens it with the `.md` file association. That prints nothing and exits 0.
+  - Workaround: the package also ships the command `designmd`, without the dot: `npx -y -p @google/design.md@0.4.0 designmd lint DESIGN.md`.
+- **Where we knowingly differ from Google's parser** (checked in CI by `compare-google.test.ts`): Google 0.4.0 silently drops typography values written as references, such as `fontSize: "{spacing.md}"`, with no warning. The spec allows references to any primitive value, so we resolve them.
 - Spec facts above come from the spec file shipped inside `@google/design.md@0.4.0`. The GitHub repo itself was not reachable from the agent session.
