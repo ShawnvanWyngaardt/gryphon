@@ -25,3 +25,5 @@ export type { NormalColor } from './values/color.js';
 export { parseDimension } from './values/dimension.js';
 export { createMatcher, FAR_COLOR, SAME_COLOR } from './matcher/match.js';
 export type { MatcherOptions } from './matcher/match.js';
+export { scanCss } from './scanner/css.js';
+export type { ScanCssOptions, ScanResult } from './scanner/css.js';
