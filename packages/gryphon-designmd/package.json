@@ -17,5 +17,8 @@
     "postcss-scss": "4.0.9",
     "postcss-value-parser": "4.2.0",
     "yaml": "2.9.1"
+  },
+  "bin": {
+    "gryphon": "./dist/src/cli/main.js"
   }
 }
