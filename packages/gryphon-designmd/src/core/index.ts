@@ -20,3 +20,6 @@ export type {
   Section,
 } from './parser/parse.js';
 export type * from './types.js';
+export { parseColor } from './values/color.js';
+export type { NormalColor } from './values/color.js';
+export { parseDimension } from './values/dimension.js';
