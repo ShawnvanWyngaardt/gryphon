@@ -23,3 +23,5 @@ export type * from './types.js';
 export { parseColor } from './values/color.js';
 export type { NormalColor } from './values/color.js';
 export { parseDimension } from './values/dimension.js';
+export { scanCss } from './scanner/css.js';
+export type { ScanCssOptions, ScanResult } from './scanner/css.js';
