@@ -13,13 +13,14 @@ Last updated: 2026-11-15
 - G3-04 parser part 1 (merged, PR 7): front matter, token groups, components, unknown content, sections and errors, with line and column for every token. Written tests first.
 - G3-05 references (merged, PR 8): `{colors.primary}` and chains of references resolve to their final value; broken, looping, too-deep and group references stop the run with an error naming the token. Written tests first.
 - G3-06 parser comparison (merged, PR 9): CI compares our parser with Google's library on four DESIGN.md files. One known, explained difference. Google's empty CLI output is explained (SPEC section 10).
-- G3-07 value normalisers (in review, PR 10): every DESIGN.md colour format, including color-mix(), to 8-bit sRGB and OKLab; px, rem and em to px. Written tests first.
+- G3-07 value normalisers (merged, PR 10): every DESIGN.md colour format, including color-mix(), to 8-bit sRGB and OKLab; px, rem and em to px. Written tests first.
+- Draft GitHub issue for Google's design.md repo in `docs/drafts/google-issue.md` (minor PR, see table below). Shawn posts it himself.
 
 ## Next
 
-- Shawn reviews G3-07 (PR 10: new runtime dependency `culori`).
-- G3-08 (matcher) needs G3-07's normalisers, so it waits for G3-07 to merge.
-- Open question from PR 9: is Shawn on Windows? That would confirm why Google's CLI printed nothing.
+- G3-08 matcher, including Shawn's follow-up from PR 10: findings based on `em` values are marked as approximate.
+- Then G3-09 CSS and SCSS scanner.
+- Open question from PR 9: did an editor pop up when Shawn ran Google's CLI? The answer decides whether section B of the issue draft stays.
 
 ## Blocked
 
