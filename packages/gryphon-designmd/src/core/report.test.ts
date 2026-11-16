@@ -19,6 +19,7 @@ function finding(overrides: Partial<Finding>): Finding {
     nearest: { path: 'colors.primary', value: '#1B1A17', distance: 0.12 },
     fix: 'var(--color-primary)',
     message: '#123456 is not a DESIGN.md colour. Nearest token: colors.primary (#1B1A17).',
+    approximate: false,
     ...overrides,
   };
 }

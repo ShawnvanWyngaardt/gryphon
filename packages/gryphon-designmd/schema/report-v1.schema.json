@@ -61,7 +61,8 @@
         "category",
         "nearest",
         "fix",
-        "message"
+        "message",
+        "approximate"
       ],
       "properties": {
         "rule": { "enum": ["off-token", "raw-token-value"] },
@@ -88,7 +89,11 @@
           ]
         },
         "fix": { "type": ["string", "null"] },
-        "message": { "type": "string" }
+        "message": { "type": "string" },
+        "approximate": {
+          "type": "boolean",
+          "description": "True when an em value was involved; em is measured against the root font size."
+        }
       }
     }
   }
