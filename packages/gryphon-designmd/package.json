@@ -12,6 +12,7 @@
     ".": "./src/core/index.ts"
   },
   "dependencies": {
+    "culori": "4.0.2",
     "yaml": "2.9.1"
   }
 }
