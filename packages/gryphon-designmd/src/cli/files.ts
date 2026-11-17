@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
 /** Folders never scanned, with or without git (AC2.9). */
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git']);
@@ -21,7 +21,8 @@ const wanted = (path: string): boolean =>
 export function findFiles(cwd: string, paths: readonly string[]): string[] {
   const targets = paths.length > 0 ? paths : ['.'];
   const fromGit = gitFiles(cwd, targets);
-  const files = fromGit ?? targets.flatMap((target) => walk(cwd, join(cwd, target)));
+  // resolve, not join: an absolute target must stay absolute.
+  const files = fromGit ?? targets.flatMap((target) => walk(cwd, resolve(cwd, target)));
   return [...new Set(files.map(toPosix).filter(wanted))].sort();
 }
 

@@ -18,7 +18,7 @@ Last updated: 2026-11-15
 - G3-08 matcher (merged, PR 12): exact matches are `raw-token-value` warnings, others `off-token` errors with the nearest token (OKLab for colours, px within the same category for sizes). Findings that involve `em` are marked `approximate` (review of PR 10). Written tests first.
 - G3-09 CSS and SCSS scanner (merged, PR 13): finds hard-coded colours, font families, font sizes, spacing and radius values with exact line and column, using postcss, postcss-scss and postcss-value-parser. Written tests first.
 - G3-10 CLI v0 (merged, PR 14): `gryphon check` for CSS and SCSS, text and JSON output, exit codes 0, 1 and 2, `--design`, `--max-warnings`, file discovery that follows `.gitignore`. Written tests first.
-- G3-11 dogfooding (in review): CLI run on this repo, the club shift scheduler and VitePress. 164 findings logged in `docs/DOGFOOD.md`; two false-positive causes fixed (`@font-face`, `-apple-system`). Gate 4 re-estimated in `docs/BACKLOG.md`.
+- G3-11 dogfooding (merged, PR 15; Gate 3 approved): CLI run on this repo, the club shift scheduler and VitePress. 164 findings logged in `docs/DOGFOOD.md`; two false-positive causes fixed (`@font-face`, `-apple-system`). Gate 4 re-estimated in `docs/BACKLOG.md`.
 
 ## Next
 
@@ -63,3 +63,4 @@ Allowed since PR 4 (CI) merged and its four checks became required on `main`. Ea
 | --- | --- | --- |
 | 2026-11-15 | #5 | Dependabot for npm and GitHub Actions; accepted minimatch risk documented in SPEC 8.2. |
 | 2026-11-16 | #11 | Draft issue for Google's design.md repo (typography references); corrected SPEC 10 and a test comment. Docs only. |
+| 2026-11-17 | #16 | `npm run gryphon` for local use, README "Run it locally", CI smoke test of the built CLI, and a path fix for folders outside the current one. |
