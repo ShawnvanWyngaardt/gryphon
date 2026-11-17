@@ -175,6 +175,56 @@ describe('scanCss: definitions are not usages (AC2.4)', () => {
   });
 });
 
+describe('scanCss: local redefinitions of colours (D3, approved in PR 15)', () => {
+  const scan = (source: string, tokenSource?: boolean): string[] =>
+    scanCss(
+      source,
+      'a.css',
+      tokenSource === undefined ? { syntax: 'css' } : { syntax: 'css', tokenSource },
+    ).occurrences.map((o) => `${o.property} ${o.value} @ ${o.line}:${o.column} [${o.category}]`);
+
+  it('checks a colour defined in a custom property outside a token file', () => {
+    expect(scan('.hero {\n  --hero-orange: #f34213;\n}')).toEqual([
+      '--hero-orange #f34213 @ 2:18 [color]',
+    ]);
+  });
+
+  it('treats a file with :root custom properties as a token file, including its dark mode blocks', () => {
+    expect(
+      scan(':root { --brand: #6366f1; }\n.dark { --brand: #818cf8; }\n.a { --local: #123456; }'),
+    ).toEqual([]);
+  });
+
+  it('finds :root inside @media too', () => {
+    expect(
+      scan('@media (prefers-color-scheme: dark) { :root { --bg: #000; } }\n.a { --x: #fff; }'),
+    ).toEqual([]);
+  });
+
+  it('follows an explicit decision either way', () => {
+    expect(scan('.a { --x: #123456; }', true)).toEqual([]);
+    expect(scan(':root { --brand: #6366f1; }', false)).toEqual(['--brand #6366f1 @ 1:18 [color]']);
+  });
+
+  it('checks only colours: sizes and fonts in custom properties are ambiguous', () => {
+    expect(scan('.a { --gap: 13px; --font: Inter; --radius: 3px; }')).toEqual([]);
+  });
+
+  it('allows var() and colour keywords in a definition', () => {
+    expect(scan('.a { --x: var(--brand); --y: currentColor; --z: transparent; }')).toEqual([]);
+  });
+
+  it('finds colours inside gradients in a definition', () => {
+    expect(scan('.a { --cta: linear-gradient(90deg, var(--brand) 10%, #ff7a18 80%); }')).toEqual([
+      '--cta #ff7a18 @ 1:54 [color]',
+    ]);
+  });
+
+  it('still skips SCSS $variable definitions', () => {
+    expect(scanCss('$brand: #6366f1;', 'a.scss', { syntax: 'scss' }).occurrences).toEqual([]);
+  });
+});
+
 describe('scanCss: SCSS', () => {
   it('finds values in nested rules and media queries, with correct lines', () => {
     const scss =

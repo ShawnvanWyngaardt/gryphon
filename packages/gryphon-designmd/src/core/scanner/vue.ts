@@ -25,7 +25,12 @@ const STYLE_LANGS: Record<string, 'css' | 'scss'> = { '': 'css', css: 'css', scs
  * Uses Vue's own template parser for parsing only; nothing is
  * compiled or run (ADR 0004).
  */
-export function scanVue(source: string, file: string): ScanResult {
+export interface ScanVueOptions {
+  /** Passed to each style block; see ScanCssOptions.tokenSource (D3). */
+  tokenSource?: boolean;
+}
+
+export function scanVue(source: string, file: string, options: ScanVueOptions = {}): ScanResult {
   let root: RootNode;
   let parseError: string | undefined;
   try {
@@ -45,7 +50,7 @@ export function scanVue(source: string, file: string): ScanResult {
 
   for (const block of blocks) {
     if (block.tag === 'style') {
-      const result = scanStyleBlock(source, file, block);
+      const result = scanStyleBlock(source, file, block, options.tokenSource);
       if (result.error !== undefined) return { occurrences: [], error: result.error };
       occurrences.push(...result.occurrences);
     } else if (block.tag === 'template') {
@@ -65,7 +70,12 @@ function attribute(element: ElementNode, name: string): AttributeNode | undefine
   );
 }
 
-function scanStyleBlock(source: string, file: string, block: ElementNode): ScanResult {
+function scanStyleBlock(
+  source: string,
+  file: string,
+  block: ElementNode,
+  tokenSource: boolean | undefined,
+): ScanResult {
   if (attribute(block, 'src') !== undefined) return { occurrences: [] };
   const lang = (attribute(block, 'lang')?.value?.content ?? '').toLowerCase();
   const syntax = STYLE_LANGS[lang];
@@ -79,6 +89,7 @@ function scanStyleBlock(source: string, file: string, block: ElementNode): ScanR
     syntax,
     lineOffset: start.line - 1,
     columnOffset: start.column - 1,
+    ...(tokenSource === undefined ? {} : { tokenSource }),
   });
 }
 
