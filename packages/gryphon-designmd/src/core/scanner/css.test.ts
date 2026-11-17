@@ -154,6 +154,14 @@ describe('scanCss: definitions are not usages (AC2.4)', () => {
     expect(found(':root { --brand: #6366f1; --space: 13px; }')).toEqual([]);
   });
 
+  it('skips @font-face, which defines a font instead of using one (found in G3-11)', () => {
+    expect(
+      found(
+        "@font-face { font-family: 'Inter Core'; src: url(a.woff2); font-weight: 400; }\n.a { font-family: Inter; }",
+      ),
+    ).toEqual(['Inter @ 2:19 [fontFamily]']);
+  });
+
   it('skips SCSS variable definitions, and allows SCSS variables as values', () => {
     expect(found('$brand: #6366f1;\n.a { color: $brand; padding: $space-md; }', 'scss')).toEqual(
       [],
