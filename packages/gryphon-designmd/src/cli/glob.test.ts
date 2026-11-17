@@ -21,6 +21,14 @@ describe('matchesAny: the small glob subset used in gryphon.config.json', () => 
     expect(matchesAny([glob], path)).toBe(expected);
   });
 
+  it('accepts Windows separators in globs and paths (review of PR 21)', () => {
+    expect(matchesAny(['src\\legacy\\**'], 'src/legacy/old.css')).toBe(true);
+    expect(matchesAny(['src/**'], 'src\\a\\b.css')).toBe(true);
+    expect(matchesAny(['**\\*.vue'], 'src\\App.vue')).toBe(true);
+    expect(matchesAny(['styles\\tokens.css'], 'styles/tokens.css')).toBe(true);
+    expect(matchesAny(['src\\*.css'], 'src\\deep\\a.css')).toBe(false);
+  });
+
   it('is false for an empty list', () => {
     expect(matchesAny([], 'a.css')).toBe(false);
   });
