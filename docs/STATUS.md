@@ -19,6 +19,7 @@ Last updated: 2026-11-15
 - G3-09 CSS and SCSS scanner (merged, PR 13): finds hard-coded colours, font families, font sizes, spacing and radius values with exact line and column, using postcss, postcss-scss and postcss-value-parser. Written tests first.
 - G3-10 CLI v0 (merged, PR 14): `gryphon check` for CSS and SCSS, text and JSON output, exit codes 0, 1 and 2, `--design`, `--max-warnings`, file discovery that follows `.gitignore`. Written tests first.
 - G3-11 dogfooding (merged, PR 15; Gate 3 approved): CLI run on this repo, the club shift scheduler and VitePress. 164 findings logged in `docs/DOGFOOD.md`; two false-positive causes fixed (`@font-face`, `-apple-system`). Gate 4 re-estimated in `docs/BACKLOG.md`.
+- G4-01 Vue scanner (in review): `<style>` and `<style lang="scss">` blocks and static `style` attributes in `.vue` files, with positions in the `.vue` file; the CLI now checks `.vue`. Written tests first.
 
 ## Next
 

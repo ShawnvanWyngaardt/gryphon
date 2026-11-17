@@ -8,6 +8,7 @@ import {
   createMatcher,
   parseDesignMd,
   scanCss,
+  scanVue,
   type Finding,
   type SkippedFile,
 } from '../core/index.js';
@@ -26,8 +27,8 @@ export const EXIT = { ok: 0, problems: 1, failed: 2 } as const;
 
 const HELP = `Usage: gryphon check [paths...] [options]
 
-Checks CSS and SCSS files against the design tokens in DESIGN.md.
-Without paths, checks the current folder. Version 0 checks ${EXTENSIONS.join(' and ')} files.
+Checks CSS, SCSS and Vue files against the design tokens in DESIGN.md.
+Without paths, checks the current folder. Checks ${EXTENSIONS.join(', ')} files.
 
 Options:
   --design <path>       DESIGN.md to read (default: ./DESIGN.md)
@@ -128,7 +129,9 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
   const skipped: SkippedFile[] = [];
   for (const file of files) {
     const source = readFileSync(resolve(io.cwd, file), 'utf8');
-    const result = scanCss(source, file, { syntax: file.endsWith('.scss') ? 'scss' : 'css' });
+    const result = file.endsWith('.vue')
+      ? scanVue(source, file)
+      : scanCss(source, file, { syntax: file.endsWith('.scss') ? 'scss' : 'css' });
     if (result.error !== undefined) {
       skipped.push({ file, reason: result.error });
       continue;
