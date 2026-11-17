@@ -69,3 +69,4 @@ Allowed since PR 4 (CI) merged and its four checks became required on `main`. Ea
 | 2026-11-16 | #11 | Draft issue for Google's design.md repo (typography references); corrected SPEC 10 and a test comment. Docs only. |
 | 2026-11-17 | #16 | `npm run gryphon` for local use, README "Run it locally", CI smoke test of the built CLI, and a path fix for folders outside the current one. |
 | 2026-11-17 | #17 | Gate 4 re-ordered by user value, as Shawn decided in PR 15; D1 to D3 marked approved; new ticket G4-23 (scheduler re-run). Docs only. |
+| 2026-11-17 | #23 | Windows: `\` accepted in config globs and paths; new "Tests on Windows (Node 24)" CI job (review of PR 21). |
