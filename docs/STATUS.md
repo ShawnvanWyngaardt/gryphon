@@ -34,7 +34,7 @@ Last updated: 2026-11-15
 
 ## Blocked
 
-- **CI is red on `main` and on every PR** since a new advisory was published after PR 24: `picomatch` (dev-only) has a high advisory with no fixed version. The `npm audit --audit-level=high` step fails. Options and a recommendation are in the audit PR; Shawn decides.
+- None. The picomatch advisory (dev-only, no fix yet) is accepted; the PR gate now audits runtime dependencies only, and `audit.yml` runs the full audit weekly (PR 25). Shawn: switch on Dependabot security alerts in the repo settings.
 
 ## Gate 3: estimated versus actual size
 
