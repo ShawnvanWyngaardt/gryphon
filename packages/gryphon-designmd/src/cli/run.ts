@@ -9,6 +9,8 @@ import {
   parseDesignMd,
   scanCss,
   scanVue,
+  ungovernedCategories,
+  type Category,
   type Finding,
   type SkippedFile,
 } from '../core/index.js';
@@ -41,6 +43,14 @@ Exit codes: 0 no errors, 1 errors (or too many warnings), 2 could not run.
 `;
 
 class UsageError extends Error {}
+
+const NOTICE: Record<Category, string> = {
+  color: 'colour tokens, so colours were not checked.',
+  fontFamily: 'font family tokens, so font families were not checked.',
+  fontSize: 'font size tokens, so font sizes were not checked.',
+  spacing: 'spacing tokens, so spacing was not checked.',
+  radius: 'radius tokens, so radius was not checked.',
+};
 
 /** The whole CLI as a function, so it can be tested without a process. */
 export async function run(argv: readonly string[], io: Io): Promise<number> {
@@ -123,6 +133,10 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
     );
   }
 
+  // Decision D2: a category without tokens is not governed by DESIGN.md.
+  for (const category of ungovernedCategories(parsed.tokens)) {
+    io.stderr.write(`${designPath} defines no ${NOTICE[category]}\n`);
+  }
   const match = createMatcher(parsed.tokens);
   const files = findFiles(io.cwd, paths);
   const findings: Finding[] = [];

@@ -31,6 +31,10 @@ Structure:
 - **Positions are always 1-based line and column of the value itself**, not of the whole declaration.
 - **Files that fail to parse are skipped and reported (AC2.8).** One broken file never stops the run.
 
+## Update (G4-01, 17 November 2026)
+
+The risk below about `@vue/compiler-dom` is closed. Measured in G4-01: Vue's browser build, `compiler-dom.esm-browser.prod.js` 3.5.45, is **29 KB gzipped**, self-contained, and contains no Babel. Babel only comes in through the `esm-bundler` build, which the playground avoids with a Vite alias (G4-10). No fallback parser is needed. Added at Shawn's request in the review of PR 18; the decision itself is unchanged.
+
 ## What we give up
 
 - Four runtime dependencies (`postcss`, `postcss-scss`, `postcss-value-parser`, `@vue/compiler-dom`) instead of none. Each one is justified in the PR that adds it.
