@@ -77,6 +77,20 @@ describe('scanVue (G4-01)', () => {
     ]);
   });
 
+  it('checks local colour redefinitions in a component, but not :root tokens (D3)', () => {
+    const sfc =
+      '<style scoped>\n.hero { --hero-orange: #f34213; }\n</style>\n<style>\n:root { --brand: #000; }\n</style>';
+    expect(found(sfc)).toEqual(['#f34213 @ 2:24 [color]']);
+  });
+
+  it('passes an explicit tokenSource decision to every style block', () => {
+    const sfc = '<style>\n:root { --brand: #000; }\n.a { --x: #fff; }\n</style>';
+    const values = (tokenSource: boolean): string[] =>
+      scanVue(sfc, 'a.vue', { tokenSource }).occurrences.map((o) => o.value);
+    expect(values(true)).toEqual([]);
+    expect(values(false)).toEqual(['#000', '#fff']);
+  });
+
   it('returns an error for a broken template, without throwing (AC2.8)', () => {
     const result = scanVue('<template><div></template>', 'broken.vue');
     expect(result.occurrences).toEqual([]);

@@ -293,6 +293,23 @@ describe('gryphon check: gryphon.config.json (G4-04, AC2.7)', () => {
     expect(out).not.toContain('off-token');
   });
 
+  it('uses tokenSources to decide where tokens may be defined (D3)', async () => {
+    const files = {
+      'DESIGN.md': DESIGN,
+      'styles/tokens.css': '.theme { --accent: #1F5C45; }',
+      'src/hero.css': '.hero { --hero-orange: #f34213; --hero-ink: #1B1A17; }',
+    };
+    // Without config, neither file has :root, so both are checked.
+    const auto = (await cli(project(files), 'check')).out;
+    expect(auto).toContain('styles/tokens.css');
+    expect(auto).toContain('src/hero.css');
+    const dir = project({ ...files, 'gryphon.config.json': '{ "tokenSources": ["styles/**"] }' });
+    const { out } = await cli(dir, 'check');
+    expect(out).not.toContain('styles/tokens.css');
+    expect(out).toMatch(/error +off-token +#f34213/);
+    expect(out).toMatch(/warning +raw-token-value +#1B1A17 is the value of colors\.primary/);
+  });
+
   it('exits 2 with a clear message for an invalid config', async () => {
     const dir = project({
       'DESIGN.md': DESIGN,

@@ -22,7 +22,8 @@ Last updated: 2026-11-15
 - G4-01 Vue scanner (merged, PR 18): `<style>` and `<style lang="scss">` blocks and static `style` attributes in `.vue` files, with positions in the `.vue` file; the CLI now checks `.vue`. Written tests first.
 - G4-21 D2 (merged, PR 19): categories DESIGN.md has no tokens for are not checked; one notice each on stderr. VitePress dogfood run: 119 findings to 0, with 4 notices. ADR 0004 notes the 29 KB compiler-dom measurement (review of PR 18).
 - G4-20 D1 (merged, PR 20): only the first family of a font stack is checked. Scheduler `main.css`: the `'Segoe UI'` and `Roboto` fallbacks are gone, `'Inter'` stays.
-- G4-04 config file (in review): `gryphon.config.json` or `--config`, plain JSON, validated: `design`, `include`, `exclude`, `tokenSources`, `rootPx`, `rules`. Summary says "in the checked categories" when categories were skipped (review of PR 19). Written tests first.
+- G4-04 config file (merged, PR 21): `gryphon.config.json` or `--config`, plain JSON, validated: `design`, `include`, `exclude`, `tokenSources`, `rootPx`, `rules`. Summary says "in the checked categories" when categories were skipped (review of PR 19). Written tests first.
+- G4-22 D3 (in review): colours in custom property definitions outside token files are checked. The scheduler's 20 local colour variables are now reported (8 repeat a token, 12 are not tokens); VitePress stays at 0.
 
 ## Next
 

@@ -28,3 +28,4 @@ export type { MatcherOptions } from './matcher/match.js';
 export { scanCss } from './scanner/css.js';
 export type { ScanCssOptions, ScanResult } from './scanner/css.js';
 export { scanVue } from './scanner/vue.js';
+export type { ScanVueOptions } from './scanner/vue.js';

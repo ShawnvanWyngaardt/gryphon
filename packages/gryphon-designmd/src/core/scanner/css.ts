@@ -12,6 +12,13 @@ export interface ScanCssOptions {
   lineOffset?: number;
   /** Columns before the CSS on its first line. */
   columnOffset?: number;
+  /**
+   * Whether this CSS defines the project's tokens (decision D3). In a
+   * token file, custom property definitions are skipped; elsewhere their
+   * colours are checked as local redefinitions. When not given, a file
+   * counts as a token file if a `:root` rule defines custom properties.
+   */
+  tokenSource?: boolean;
 }
 
 export interface ScanResult {
@@ -121,9 +128,16 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
 
   const occurrences: Occurrence[] = [];
 
+  const tokenSource = options.tokenSource ?? definesRootTokens(root);
+
   root.walkDecls((decl: Declaration) => {
     const property = decl.prop.toLowerCase();
-    if (isReference(property)) return;
+    // Custom property definitions: tokens in a token file, local
+    // redefinitions anywhere else (D3). Only colours are checked, because
+    // a size in a custom property could be spacing, radius or a font size.
+    const isCustomProperty = decl.prop.startsWith('--');
+    if (isCustomProperty && tokenSource) return;
+    if (!isCustomProperty && isReference(property)) return;
     // @font-face defines a font; it does not use one (found in G3-11).
     const parent = decl.parent;
     if (
@@ -141,10 +155,18 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
     const nodes = valueParser(rawValue).nodes;
 
     const add = (category: Category, value: string, sourceIndex: number): void => {
-      occurrences.push({ file, ...position(valueStart + sourceIndex), property, value, category });
+      occurrences.push({
+        file,
+        ...position(valueStart + sourceIndex),
+        property: isCustomProperty ? decl.prop : property,
+        value,
+        category,
+      });
     };
 
-    if (property === 'font-family') {
+    if (isCustomProperty) {
+      colors(nodes, add);
+    } else if (property === 'font-family') {
       families(nodes, rawValue, add);
     } else if (property === 'font') {
       fontShorthand(nodes, rawValue, add);
@@ -163,6 +185,16 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
 }
 
 type Add = (category: Category, value: string, sourceIndex: number) => void;
+
+/** True when a `:root` rule, at any depth, defines custom properties. */
+function definesRootTokens(root: Root): boolean {
+  let found = false;
+  root.walkRules((rule) => {
+    if (found || !rule.selectors.some((selector) => selector.trim() === ':root')) return;
+    found = rule.some((node) => node.type === 'decl' && node.prop.startsWith('--'));
+  });
+  return found;
+}
 
 /** Visits words, and functions other than the skipped ones, depth first. */
 function walk(nodes: ValueNode[], visit: (node: ValueNode) => boolean): void {

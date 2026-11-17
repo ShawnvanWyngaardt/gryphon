@@ -161,9 +161,14 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
   const skipped: SkippedFile[] = [];
   for (const file of files) {
     const source = readFileSync(resolve(io.cwd, file), 'utf8');
+    // With tokenSources in the config, exactly those files hold tokens (D3).
+    const tokenSource =
+      config.tokenSources === undefined
+        ? {}
+        : { tokenSource: matchesAny(config.tokenSources, file) };
     const result = file.endsWith('.vue')
-      ? scanVue(source, file)
-      : scanCss(source, file, { syntax: file.endsWith('.scss') ? 'scss' : 'css' });
+      ? scanVue(source, file, tokenSource)
+      : scanCss(source, file, { syntax: file.endsWith('.scss') ? 'scss' : 'css', ...tokenSource });
     if (result.error !== undefined) {
       skipped.push({ file, reason: result.error });
       continue;
