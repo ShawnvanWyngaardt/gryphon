@@ -34,7 +34,7 @@ Last updated: 2026-11-15
 
 ## Blocked
 
-- Nothing blocked.
+- **CI is red on `main` and on every PR** since a new advisory was published after PR 24: `picomatch` (dev-only) has a high advisory with no fixed version. The `npm audit --audit-level=high` step fails. Options and a recommendation are in the audit PR; Shawn decides.
 
 ## Gate 3: estimated versus actual size
 
