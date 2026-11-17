@@ -222,6 +222,105 @@ describe('gryphon check: DESIGN.md problems exit 2 (AC5.3)', () => {
   });
 });
 
+describe('gryphon check: gryphon.config.json (G4-04, AC2.7)', () => {
+  const css = '.a { color: #6366f1; padding: 8px; }';
+
+  it('turns a rule off or changes its severity', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': css,
+      'gryphon.config.json': JSON.stringify({
+        rules: { 'raw-token-value': 'off', 'off-token': 'warning' },
+      }),
+    });
+    const { code, out } = await cli(dir, 'check');
+    expect(code).toBe(0);
+    expect(out).toContain('0 errors, 1 warning');
+    expect(out).toMatch(/warning +off-token +#6366f1/);
+  });
+
+  it('can make raw-token-value an error', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': '.a { padding: 8px; }',
+      'gryphon.config.json': '{ "rules": { "raw-token-value": "error" } }',
+    });
+    expect((await cli(dir, 'check')).code).toBe(1);
+  });
+
+  it('applies include and exclude globs to the files found', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'src/a.css': css,
+      'src/legacy/old.css': css,
+      'other/b.css': css,
+      'gryphon.config.json': '{ "include": ["src/**"], "exclude": ["**/legacy/**"] }',
+    });
+    const { out } = await cli(dir, 'check');
+    expect(out).toContain('(1 file checked)');
+    expect(out).toContain('src/a.css');
+  });
+
+  it('reads DESIGN.md from the config, and --design wins over it', async () => {
+    const dir = project({
+      'docs/DESIGN.md': DESIGN,
+      'a.css': '.a { padding: 8px; }',
+      'gryphon.config.json': '{ "design": "docs/DESIGN.md" }',
+    });
+    expect((await cli(dir, 'check')).code).toBe(0);
+    expect((await cli(dir, 'check', '--design', 'nope.md')).code).toBe(2);
+  });
+
+  it('uses rootPx for rem values', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': '.a { padding: 1rem; }',
+      'gryphon.config.json': '{ "rootPx": 8 }',
+    });
+    expect((await cli(dir, 'check')).out).toContain('1rem is the value of spacing.sm');
+  });
+
+  it('reads a config from --config', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': css,
+      'ci/g.json': '{ "rules": { "off-token": "off" } }',
+    });
+    const { code, out } = await cli(dir, 'check', '--config', 'ci/g.json');
+    // off-token is off, so only the raw-token-value warning for 8px is left.
+    expect(code).toBe(0);
+    expect(out).toContain('0 errors, 1 warning');
+    expect(out).not.toContain('off-token');
+  });
+
+  it('exits 2 with a clear message for an invalid config', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'gryphon.config.json': '{ "rules": { "off-token": "loud" } }',
+    });
+    const { code, err } = await cli(dir, 'check');
+    expect(code).toBe(2);
+    expect(err).toContain('rule "off-token" must be "error", "warning" or "off".');
+  });
+});
+
+describe('gryphon check: summary when categories were skipped (review of PR 19)', () => {
+  it('says "in the checked categories" when DESIGN.md left some out', async () => {
+    const dir = project({
+      'DESIGN.md': '---\ncolors:\n  primary: "#1B1A17"\n---\n',
+      'a.css': '.a { padding: 13px; }',
+    });
+    expect((await cli(dir, 'check')).out).toContain(
+      'No problems found in the checked categories in 1 file.',
+    );
+  });
+
+  it('keeps the plain wording when every category was checked', async () => {
+    const dir = project({ 'DESIGN.md': DESIGN, 'a.css': '.a { margin: 0; }' });
+    expect((await cli(dir, 'check')).out).toContain('No problems found in 1 file.');
+  });
+});
+
 describe('gryphon check: file discovery (AC2.9)', () => {
   it('checks .css, .scss and .vue, and skips node_modules, dist, build and coverage', async () => {
     const dir = project({

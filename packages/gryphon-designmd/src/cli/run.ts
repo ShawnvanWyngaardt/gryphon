@@ -14,8 +14,10 @@ import {
   type Finding,
   type SkippedFile,
 } from '../core/index.js';
+import { loadConfig, type Config } from './config.js';
 import { EXTENSIONS, findFiles } from './files.js';
 import { ansiStyle, formatText, plainStyle } from './format.js';
+import { matchesAny } from './glob.js';
 
 export interface Io {
   cwd: string;
@@ -33,7 +35,8 @@ Checks CSS, SCSS and Vue files against the design tokens in DESIGN.md.
 Without paths, checks the current folder. Checks ${EXTENSIONS.join(', ')} files.
 
 Options:
-  --design <path>       DESIGN.md to read (default: ./DESIGN.md)
+  --design <path>       DESIGN.md to read (default: ./DESIGN.md, or "design" in the config)
+  --config <path>       Config file (default: ./gryphon.config.json, if it exists)
   --format text|json    Output format (default: text)
   --max-warnings <n>    Fail when there are more than n warnings
   -h, --help            Show this help
@@ -78,7 +81,8 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
     allowPositionals: true,
     strict: true,
     options: {
-      design: { type: 'string', default: 'DESIGN.md' },
+      design: { type: 'string' },
+      config: { type: 'string' },
       format: { type: 'string', default: 'text' },
       'max-warnings': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
@@ -109,7 +113,16 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
   }
 
   // DESIGN.md problems stop the run with exit code 2 (AC5.3).
-  const designPath = values.design;
+  // The config file is read before DESIGN.md, because it can name it (AC2.7).
+  const loaded = loadConfig(io.cwd, values.config);
+  if (!loaded.ok) {
+    io.stderr.write(`${loaded.error}\n`);
+    return EXIT.failed;
+  }
+  const config: Config = loaded.config;
+  const matcherOptions = config.rootPx === undefined ? {} : { rootPx: config.rootPx };
+
+  const designPath = values.design ?? config.design ?? 'DESIGN.md';
   let designText: string;
   try {
     designText = readFileSync(resolve(io.cwd, designPath), 'utf8');
@@ -134,11 +147,16 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
   }
 
   // Decision D2: a category without tokens is not governed by DESIGN.md.
-  for (const category of ungovernedCategories(parsed.tokens)) {
+  const skippedCategories = ungovernedCategories(parsed.tokens, matcherOptions);
+  for (const category of skippedCategories) {
     io.stderr.write(`${designPath} defines no ${NOTICE[category]}\n`);
   }
-  const match = createMatcher(parsed.tokens);
-  const files = findFiles(io.cwd, paths);
+  const match = createMatcher(parsed.tokens, matcherOptions);
+  const files = findFiles(io.cwd, paths).filter(
+    (file) =>
+      (config.include === undefined || matchesAny(config.include, file)) &&
+      !matchesAny(config.exclude ?? [], file),
+  );
   const findings: Finding[] = [];
   const skipped: SkippedFile[] = [];
   for (const file of files) {
@@ -152,7 +170,11 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
     }
     for (const occurrence of result.occurrences) {
       const finding = match(occurrence);
-      if (finding !== null) findings.push(finding);
+      if (finding === null) continue;
+      // Per-rule severity from the config; "off" drops the finding (AC2.7).
+      const setting = config.rules?.[finding.rule];
+      if (setting === 'off') continue;
+      findings.push(setting === undefined ? finding : { ...finding, severity: setting });
     }
   }
 
@@ -169,7 +191,11 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
     io.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   } else {
     const useColor = io.stdout.isTTY === true && (io.env['NO_COLOR'] ?? '') === '';
-    io.stdout.write(formatText(report, useColor ? ansiStyle : plainStyle));
+    io.stdout.write(
+      formatText(report, useColor ? ansiStyle : plainStyle, {
+        partial: skippedCategories.length > 0,
+      }),
+    );
   }
 
   const { errors, warnings } = report.summary;

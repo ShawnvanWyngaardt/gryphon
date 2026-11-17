@@ -27,7 +27,12 @@ export const ansiStyle: Style = {
  * Human-readable report, grouped by file. Severity is always written
  * as a word, so colour is never the only signal (AC5.4).
  */
-export function formatText(report: Report, style: Style): string {
+export interface FormatOptions {
+  /** True when some categories were not checked (D2), so "no problems" only covers the rest. */
+  partial?: boolean;
+}
+
+export function formatText(report: Report, style: Style, options: FormatOptions = {}): string {
   const lines: string[] = [];
   const byFile = new Map<string, Finding[]>();
   for (const finding of report.findings) {
@@ -51,7 +56,9 @@ export function formatText(report: Report, style: Style): string {
 
   const { errors, warnings, files } = report.summary;
   if (errors === 0 && warnings === 0) {
-    lines.push(`No problems found in ${plural(files, 'file')}.`);
+    // Review of PR 19: do not claim more than was checked.
+    const scope = options.partial === true ? ' in the checked categories' : '';
+    lines.push(`No problems found${scope} in ${plural(files, 'file')}.`);
   } else {
     const summary = `${plural(errors, 'error')}, ${plural(warnings, 'warning')} in ${plural(byFile.size, 'file')} (${plural(files, 'file')} checked)`;
     lines.push(errors > 0 ? style.red(summary) : style.yellow(summary));
