@@ -34,7 +34,7 @@ Last updated: 2026-11-15
 
 ## Blocked
 
-- Nothing blocked.
+- None. The picomatch advisory (dev-only, no fix yet) is accepted; the PR gate now audits runtime dependencies only, and `audit.yml` runs the full audit weekly (PR 25). Shawn: switch on Dependabot security alerts in the repo settings.
 
 ## Gate 3: estimated versus actual size
 

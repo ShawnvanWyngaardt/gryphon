@@ -331,11 +331,14 @@ If it happens, the core idea (read DESIGN.md, flag off-token values in code) sto
 
 ### 8.2 Accepted risks
 
+**Audit policy (Shawn, PR 25, 17 November 2026):** the required check on every PR audits runtime dependencies only (`npm audit --omit=dev --audit-level=high`). A separate workflow (`audit.yml`) runs the full audit, dev tools included, weekly and on every push to `main`. It is not required, so it shows dev advisories without blocking unrelated work. Dependabot security alerts should be on: a repo setting only Shawn can switch on. Every accepted dev advisory is listed below.
+
 Risks we know about and chose to live with. Each has an owner decision and a trigger to look again.
 
 | Risk | Decided | Why accepted | Look again when |
 | --- | --- | --- | --- |
 | `minimatch` 10.2.6 inside typescript-eslint has a moderate denial-of-service advisory ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)). The fix exists only in minimatch 11, which typescript-eslint does not accept yet. | Shawn, review of PR 3, 15 November 2026 | Dev-only tool, never shipped to users. It only sees glob patterns from our own lint config. Forcing minimatch 11 with an override would run the linter on a version it was not tested with. | typescript-eslint moves to minimatch 11 (Dependabot will propose it), or the advisory is raised above moderate. CI fails on high and critical advisories. |
+| `picomatch` up to 4.0.7 has a high denial-of-service advisory (catastrophic backtracking on single-branch repeated extglobs, [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf), CVE-2026-112366). No fixed version exists; upstream has no merged fix (micromatch/picomatch issue 234, PR 246 open). | Shawn, PR 25, 17 November 2026 (option C) | Dev-only: used by vitest, vite and typescript-eslint to match our own test and source globs. Nothing we ship depends on it (`npm ls --omit=dev` finds no picomatch). Exploiting it needs an attacker-controlled glob pattern; ours come from our own config files. | A fixed picomatch is released (Dependabot will propose it), or it reaches runtime dependencies. |
 
 ## 9. Decisions
 

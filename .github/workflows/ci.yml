@@ -31,8 +31,10 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
-      # Fails on high or critical advisories, in any dependency.
-      - run: npm audit --audit-level=high
+      # Fails on high or critical advisories in runtime dependencies: what
+      # users install. Dev-only advisories are checked by audit.yml, so a
+      # new advisory in a test tool cannot block unrelated work (PR 25).
+      - run: npm audit --omit=dev --audit-level=high
       # The local CLI works after a build (README, "Run it locally"),
       # and this repo passes its own check (FR9).
       - run: npm run build
