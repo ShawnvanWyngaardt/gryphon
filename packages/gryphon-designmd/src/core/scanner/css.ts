@@ -124,6 +124,14 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
   root.walkDecls((decl: Declaration) => {
     const property = decl.prop.toLowerCase();
     if (isReference(property)) return;
+    // @font-face defines a font; it does not use one (found in G3-11).
+    const parent = decl.parent;
+    if (
+      parent?.type === 'atrule' &&
+      (parent as { name?: string }).name?.toLowerCase() === 'font-face'
+    ) {
+      return;
+    }
     const start = decl.source?.start?.offset;
     if (start === undefined) return;
 

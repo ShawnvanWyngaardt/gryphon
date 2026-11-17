@@ -203,7 +203,16 @@ describe('font families', () => {
   });
 
   it('allows generic family keywords', () => {
-    for (const generic of ['sans-serif', 'serif', 'monospace', 'system-ui', 'ui-monospace']) {
+    for (const generic of [
+      'sans-serif',
+      'serif',
+      'monospace',
+      'system-ui',
+      'ui-monospace',
+      // Vendor names for the system font, found in G3-11.
+      '-apple-system',
+      'BlinkMacSystemFont',
+    ]) {
       expect(match(occ('fontFamily', generic))).toBeNull();
     }
   });

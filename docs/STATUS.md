@@ -17,12 +17,14 @@ Last updated: 2026-11-15
 - Draft GitHub issue for Google's design.md repo in `docs/drafts/google-issue.md` (minor PR 11, see table below). Shawn posts it himself.
 - G3-08 matcher (merged, PR 12): exact matches are `raw-token-value` warnings, others `off-token` errors with the nearest token (OKLab for colours, px within the same category for sizes). Findings that involve `em` are marked `approximate` (review of PR 10). Written tests first.
 - G3-09 CSS and SCSS scanner (merged, PR 13): finds hard-coded colours, font families, font sizes, spacing and radius values with exact line and column, using postcss, postcss-scss and postcss-value-parser. Written tests first.
-- G3-10 CLI v0 (in review): `gryphon check` for CSS and SCSS, text and JSON output, exit codes 0, 1 and 2, `--design`, `--max-warnings`, file discovery that follows `.gitignore`. Written tests first.
+- G3-10 CLI v0 (merged, PR 14): `gryphon check` for CSS and SCSS, text and JSON output, exit codes 0, 1 and 2, `--design`, `--max-warnings`, file discovery that follows `.gitignore`. Written tests first.
+- G3-11 dogfooding (in review): CLI run on this repo, the club shift scheduler and VitePress. 164 findings logged in `docs/DOGFOOD.md`; two false-positive causes fixed (`@font-face`, `-apple-system`). Gate 4 re-estimated in `docs/BACKLOG.md`.
 
 ## Next
 
-- Shawn reviews G3-10 (not minor: the CLI is public API).
-- G3-11 dogfooding runs the CLI, so it waits for G3-10 to merge. Then Gate 3 review.
+- **Gate 3 is complete once G3-11 merges.** Shawn reviews Gate 3 as a whole.
+- Decisions for Shawn from dogfooding: D1 (font fallbacks), D2 (categories with no tokens), D3 (custom property definitions outside token files). See `docs/DOGFOOD.md`.
+- Then Gate 4, starting with G4-01 (Vue scanner) and a re-run on the club shift scheduler.
 - Open question from PR 9: did an editor pop up when Shawn ran Google's CLI? The answer decides whether section B of the issue draft stays.
 
 ## Blocked
@@ -45,10 +47,11 @@ Changed lines per PR, not counting `package-lock.json`, measured with `git diff 
 | G3-08 matcher | 12 | M | 485 | 228 | L |
 | G3-09 CSS and SCSS scanner | 13 | L | 496 | 238 | L, over |
 | G3-10 CLI v0 | 14 | M | 571 | 254 | L, over |
+| G3-11 dogfooding | 15 | S | 492 | 18 | S in code (14 lines); the rest is the findings log and derived DESIGN.md files |
 
 What this says:
 
-- **8 of 10 tickets came out at least one band larger than estimated.** Only G3-02 and G3-09 landed in their band. The estimates were too low, not the work too big.
+- **8 of 10 code tickets came out at least one band larger than estimated** (G3-11 is mostly docs and is left out of this count). Only G3-02 and G3-09 landed in their band. The estimates were too low, not the work too big.
 - **Tests are the main reason.** On average tests are 43% of the lines. The size bands were set before "tests first" and the 80% floor, so they counted code only.
 - **Proposal for Gate 4:** keep the bands, but count code only, and expect tests to add about the same again. Under that rule, most Gate 3 tickets would have been in band.
 

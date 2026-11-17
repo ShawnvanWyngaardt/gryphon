@@ -12,8 +12,13 @@ export interface MatcherOptions {
   rootPx?: number;
 }
 
-/** CSS generic families, always allowed (AC2.3). */
+/**
+ * CSS generic families, always allowed (AC2.3). Also the vendor names
+ * for the system font, which act like `system-ui` (found in G3-11).
+ */
 const GENERIC_FAMILIES = new Set([
+  '-apple-system',
+  'blinkmacsystemfont',
   'serif',
   'sans-serif',
   'monospace',
