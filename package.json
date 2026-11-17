@@ -15,7 +15,8 @@
     "typecheck": "tsc -p packages/gryphon-designmd --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc -p packages/gryphon-designmd/tsconfig.build.json"
+    "build": "tsc -p packages/gryphon-designmd/tsconfig.build.json",
+    "gryphon": "node packages/gryphon-designmd/dist/src/cli/main.js"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

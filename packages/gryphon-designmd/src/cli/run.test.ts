@@ -106,6 +106,37 @@ describe('gryphon check: results and exit codes (AC5.1, AC5.3)', () => {
     expect(out).not.toContain('b/y.css');
   });
 
+  it('checks an absolute path outside the current folder, even inside a git repo', async () => {
+    const other = project({ 'DESIGN.md': DESIGN, 'src/x.css': '.a { color: red; }' });
+    const here = project({ 'README.md': '' });
+    execFileSync('git', ['init', '-q'], { cwd: here });
+    const { code, out } = await cli(
+      here,
+      'check',
+      join(other, 'src'),
+      '--design',
+      join(other, 'DESIGN.md'),
+    );
+    expect(code).toBe(1);
+    expect(out).toContain('(1 file checked)');
+  });
+
+  it('checks a relative path that goes up out of the current folder', async () => {
+    const parent = project({
+      'app/DESIGN.md': DESIGN,
+      'app/src/x.css': '.a { color: red; }',
+      'tool/README.md': '',
+    });
+    const { out } = await cli(
+      join(parent, 'tool'),
+      'check',
+      '../app/src',
+      '--design',
+      '../app/DESIGN.md',
+    );
+    expect(out).toContain('../app/src/x.css');
+  });
+
   it('reports files it could not parse without stopping (AC2.8)', async () => {
     const dir = project({
       'DESIGN.md': DESIGN,

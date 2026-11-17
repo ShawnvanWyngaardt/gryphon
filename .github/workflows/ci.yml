@@ -33,6 +33,11 @@ jobs:
       - run: npm run typecheck
       # Fails on high or critical advisories, in any dependency.
       - run: npm audit --audit-level=high
+      # The local CLI works after a build (README, "Run it locally"),
+      # and this repo passes its own check (FR9).
+      - run: npm run build
+      - run: npm run gryphon -- --version
+      - run: npm run gryphon -- check
 
   tests:
     name: Tests and coverage (Node ${{ matrix.node }})
