@@ -58,8 +58,19 @@ Everything works without a config file. To change the defaults, add `gryphon.con
 | `design` | Path to DESIGN.md. `--design` wins over it. |
 | `include` | Only check files matching one of these globs. |
 | `exclude` | Do not check files matching one of these globs. |
-| `tokenSources` | Files where your tokens are defined. Used to tell token definitions from local redefinitions (coming in G4-22). |
+| `tokenSources` | Files where your tokens are defined. See "Token files and local redefinitions" below. |
 | `rootPx` | Pixels per `rem` and `em`. Default 16. |
 | `rules` | `"error"`, `"warning"` or `"off"` for `off-token` and `raw-token-value`. |
 
 Globs support `**` (any folders), `*` (anything in one folder) and `?` (one character), with `/` between folders.
+
+### Token files and local redefinitions
+
+A colour defined in a custom property outside your token files is a local redefinition, for example `--hero-orange: #f34213` in a component. gryphon checks it like any hard-coded colour: a copy of a token's value is a warning, and any other colour is an error.
+
+Which files count as token files:
+
+- **Without `tokenSources`:** any CSS or SCSS file with a `:root` rule that defines custom properties. In a `.vue` file, each `<style>` block is judged on its own: a `<style>` block with a `:root` rule counts as a token source, but the component's other style blocks are still checked.
+- **With `tokenSources`:** exactly the files that match its globs, and nothing else. A `:root` block anywhere else is then checked too.
+
+Only colours in custom properties are checked. A size such as `--card-gap: 13px` could be spacing, a radius or a font size, so it is left alone. SCSS `$variables` are not checked.

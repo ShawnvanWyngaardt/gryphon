@@ -23,7 +23,7 @@ Last updated: 2026-11-15
 - G4-21 D2 (merged, PR 19): categories DESIGN.md has no tokens for are not checked; one notice each on stderr. VitePress dogfood run: 119 findings to 0, with 4 notices. ADR 0004 notes the 29 KB compiler-dom measurement (review of PR 18).
 - G4-20 D1 (merged, PR 20): only the first family of a font stack is checked. Scheduler `main.css`: the `'Segoe UI'` and `Roboto` fallbacks are gone, `'Inter'` stays.
 - G4-04 config file (merged, PR 21): `gryphon.config.json` or `--config`, plain JSON, validated: `design`, `include`, `exclude`, `tokenSources`, `rootPx`, `rules`. Summary says "in the checked categories" when categories were skipped (review of PR 19). Written tests first.
-- G4-22 D3 (in review): colours in custom property definitions outside token files are checked. The scheduler's 20 local colour variables are now reported (8 repeat a token, 12 are not tokens); VitePress stays at 0.
+- G4-22 D3 (merged, PR 22): colours in custom property definitions outside token files are checked. The scheduler's 20 local colour variables are now reported (8 repeat a token, 12 are not tokens); VitePress stays at 0.
 
 ## Next
 
@@ -71,3 +71,4 @@ Allowed since PR 4 (CI) merged and its four checks became required on `main`. Ea
 | 2026-11-17 | #16 | `npm run gryphon` for local use, README "Run it locally", CI smoke test of the built CLI, and a path fix for folders outside the current one. |
 | 2026-11-17 | #17 | Gate 4 re-ordered by user value, as Shawn decided in PR 15; D1 to D3 marked approved; new ticket G4-23 (scheduler re-run). Docs only. |
 | 2026-11-17 | #23 | Windows: `\` accepted in config globs and paths; new "Tests on Windows (Node 24)" CI job (review of PR 21). |
+| 2026-11-17 | #24 | README section "Token files and local redefinitions" (review of PR 22); documents the per-block rule in .vue files. Docs only. |
