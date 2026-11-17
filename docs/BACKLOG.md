@@ -15,10 +15,9 @@ Counted by script from the tables below, not by hand.
 | 1 Spec | 1 | 0 | 1 | 0 | 2 |
 | 2 Architecture | 5 | 4 | 1 | 0 | 6 |
 | 3 First working slice | 11 | 6 | 4 | 1 | 17 |
-| 4 Release candidate (re-estimated) | 20 | 10 | 10 | 0 | 30 |
-| 4 proposed from dogfooding (D1 to D3) | 3 | 2 | 1 | 0 | 4 |
+| 4 Release candidate (re-estimated, re-ordered) | 24 | 13 | 11 | 0 | 35 |
 | 5 Launch | 6 | 4 | 2 | 0 | 8 |
-| **Total** | **46** | **26** | **19** | **1** | **67** |
+| **Total** | **47** | **27** | **19** | **1** | **68** |
 
 Session estimate: S = 1, M = 2, L = 3. These are guesses for planning, not commitments.
 
@@ -72,44 +71,46 @@ Gate 3 review happens here, with the CLI running on real CSS and SCSS.
 
 ## Gate 4: Release candidate
 
+**Order (Shawn, Gate 3 approval in PR 15): by user value.** Vue first, then the three dogfooding decisions with the config file, then a re-run on the club shift scheduler. Tailwind, the Action and the playground come after that. D1 to D3 were approved in PR 15.
+
 **Re-estimated after Gate 3** (17 November 2026), with the rule Shawn approved in PR 14:
 - **The band measures code only:** S under 100 lines, M 100 to 300, L over 300.
 - **"Expected total" adds tests.** Tests roughly double code-heavy tickets. Docs and review tickets have few tests.
 
 "Old" is the estimate from before Gate 3. Sessions in the summary still use S = 1, M = 2, L = 3 on the code band.
 
-| Id | Ticket | Size | Old | Expected total lines | Covers |
-| --- | --- | --- | --- | --- | --- |
-| G4-01 | Vue SFC scanner: `<style>`, `style` and `class` in `<template>` (tests first). Then re-run the scheduler (DOGFOOD.md). | M | L | 400 | FR2, AC3.4 |
-| G4-02a | Tailwind part 1: class reader (variants, `!`, `-`, `/50`, arbitrary values) and default theme table (tests first) | M | L | 500 | AC2.5 |
-| G4-02b | Tailwind part 2: project `@theme` blocks and `@apply` (tests first) | M | (in G4-02) | 350 | AC2.5 |
-| G4-03 | Ignore comments and suppression counts | S | S | 150 | AC2.6 |
-| G4-04 | Config file loading and validation | M | M | 250 | AC2.7 |
-| G4-05 | Suggested fixes as text: CSS custom property or Tailwind class | M | M | 250 | AC3.3 |
-| G4-06 | Publish the JSON schema in the package and document it. Most of this shipped in G3-10. | S | S | 50 | AC5.5 |
-| G4-07 | Benchmark fixture (1,000 CSS, SCSS and Vue files) and CI time limit | S | S | 100 | NFR-P1, P3 |
-| G4-08 | GitHub Action: scan files the PR touches, annotations, job summary | M | M | 400 | AC6.1, 6.2, 6.4, 6.5 |
-| G4-09 | GitHub Action: single updating PR comment, fork fallback | M | M | 250 | AC6.3, 6.4, 6.6 |
-| G4-10 | Playground shell: Vue 3 and Vite, layout and theme from DESIGN.md, self-hosted fonts, CSP | M | M | 300 | FR7, AC7.3 |
-| G4-11 | Playground: text areas, file type picker, example, check in browser, findings list, live region | M | M | 350 | AC7.1, NFR-A4 |
-| G4-12 | Playground: offline end-to-end test and bundle size check | S | S | 120 | AC7.2, 7.4 |
-| G4-13 | README docs and three worked examples generated in CI | S | M | 300 | FR8 |
-| G4-14 | Self-check in CI on playground source | S | S | 30 | FR9 |
-| G4-15 | axe-core in CI, keyboard and screen reader pass, write-up | S | M | 200 | NFR-A |
-| G4-16 | Security review and write-up | S | S | 100 | NFR-S6 |
-| G4-17 | Design critique of the playground, with fixes | S | S | 150 | DESIGN.md |
-| G4-18 | CONTRIBUTING.md, including the schema version bump rule (review of PR 12) | S | S | 100 | NFR-D5 |
-| G4-19 | Release workflow: npm provenance, Action tags, SHA-pinned actions | M | M | 200 | NFR-S5 |
+| Order | Id | Ticket | Size | Old | Expected total lines | Covers |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | G4-01 | Vue SFC scanner: `<style>`, `style` and `class` in `<template>` (tests first). | M | L | 400 | FR2, AC3.4 |
+| 2 | G4-21 | D2 (approved): skip a category that DESIGN.md has no tokens for, with one notice | S | (new) | 120 | AC3.2 |
+| 3 | G4-20 | D1 (approved): check only the first family in a font stack | S | (new) | 60 | AC2.3 |
+| 4 | G4-04 | Config file loading and validation | M | M | 250 | AC2.7 |
+| 5 | G4-22 | D3 (approved): check custom property definitions outside token source files (needs G4-04) | M | (new) | 250 | AC2.4 |
+| 6 | G4-23 | Re-run dogfooding on the club shift scheduler, with Shawn's real DESIGN.md and all Vue style blocks; update `docs/DOGFOOD.md` | S | (new) | 150 | FR9, DOGFOOD.md |
+| 7 | G4-03 | Ignore comments and suppression counts | S | S | 150 | AC2.6 |
+| 8 | G4-05 | Suggested fixes as text: CSS custom property or Tailwind class | M | M | 250 | AC3.3 |
+| 9 | G4-02a | Tailwind part 1: class reader (variants, `!`, `-`, `/50`, arbitrary values) and default theme table (tests first) | M | L | 500 | AC2.5 |
+| 10 | G4-02b | Tailwind part 2: project `@theme` blocks and `@apply` (tests first) | M | (in G4-02) | 350 | AC2.5 |
+| 11 | G4-08 | GitHub Action: scan files the PR touches, annotations, job summary | M | M | 400 | AC6.1, 6.2, 6.4, 6.5 |
+| 12 | G4-09 | GitHub Action: single updating PR comment, fork fallback | M | M | 250 | AC6.3, 6.4, 6.6 |
+| 13 | G4-10 | Playground shell: Vue 3 and Vite, layout and theme from DESIGN.md, self-hosted fonts, CSP | M | M | 300 | FR7, AC7.3 |
+| 14 | G4-11 | Playground: text areas, file type picker, example, check in browser, findings list, live region | M | M | 350 | AC7.1, NFR-A4 |
+| 15 | G4-12 | Playground: offline end-to-end test and bundle size check | S | S | 120 | AC7.2, 7.4 |
+| 16 | G4-14 | Self-check in CI on playground source | S | S | 30 | FR9 |
+| 17 | G4-06 | Publish the JSON schema in the package and document it. Most of this shipped in G3-10. | S | S | 50 | AC5.5 |
+| 18 | G4-07 | Benchmark fixture (1,000 CSS, SCSS and Vue files) and CI time limit | S | S | 100 | NFR-P1, P3 |
+| 19 | G4-13 | README docs and three worked examples generated in CI | S | M | 300 | FR8 |
+| 20 | G4-15 | axe-core in CI, keyboard and screen reader pass, write-up | S | M | 200 | NFR-A |
+| 21 | G4-16 | Security review and write-up | S | S | 100 | NFR-S6 |
+| 22 | G4-17 | Design critique of the playground, with fixes | S | S | 150 | DESIGN.md |
+| 23 | G4-18 | CONTRIBUTING.md, including the schema version bump rule (review of PR 12) | S | S | 100 | NFR-D5 |
+| 24 | G4-19 | Release workflow: npm provenance, Action tags, SHA-pinned actions | M | M | 200 | NFR-S5 |
 
-### Proposed from dogfooding (waiting for decisions D1 to D3 in `docs/DOGFOOD.md`)
+Notes on the order:
 
-Each one is built only if Shawn approves its decision. Each changes approved behaviour.
-
-| Id | Ticket | Size | Old | Expected total lines | Covers |
-| --- | --- | --- | --- | --- | --- |
-| G4-20 | D1: check only the first family in a font stack | S | (new) | 60 | AC2.3 |
-| G4-21 | D2: skip a category that DESIGN.md has no tokens for, with one notice | S | (new) | 120 | AC3.2 |
-| G4-22 | D3: check custom property definitions outside token source files (needs G4-04) | M | (new) | 250 | AC2.4 |
+- **G4-23 needs Shawn's real DESIGN.md for the scheduler** (promised in PR 15). Until then it is blocked, and work continues with the tickets after it.
+- G4-03 (ignore comments) and G4-05 (suggested fixes) come straight after the re-run, before Tailwind. Both make the CLI better for real users, and the re-run will show how much they are needed. This placement is my proposal; Shawn's comment did not cover them.
+- G4-14 (self-check in CI) moves next to the playground, because it checks the playground's code. PR 16 already runs `gryphon check` on this repo in CI.
 
 ## Gate 5: Launch
 

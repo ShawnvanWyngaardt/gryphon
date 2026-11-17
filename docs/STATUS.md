@@ -22,9 +22,9 @@ Last updated: 2026-11-15
 
 ## Next
 
-- **Gate 3 is complete once G3-11 merges.** Shawn reviews Gate 3 as a whole.
-- Decisions for Shawn from dogfooding: D1 (font fallbacks), D2 (categories with no tokens), D3 (custom property definitions outside token files). See `docs/DOGFOOD.md`.
-- Then Gate 4, starting with G4-01 (Vue scanner) and a re-run on the club shift scheduler.
+- **Gate 3 approved (PR 15).** D1, D2 and D3 approved.
+- Gate 4 order (Shawn, PR 15): G4-01 Vue scanner, then D2 (G4-21), D1 (G4-20), config file (G4-04) with D3 (G4-22), then the re-run on the club shift scheduler (G4-23). Tailwind, the Action and the playground after that.
+- G4-23 waits for Shawn's real DESIGN.md for the scheduler.
 - Open question from PR 9: did an editor pop up when Shawn ran Google's CLI? The answer decides whether section B of the issue draft stays.
 
 ## Blocked

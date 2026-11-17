@@ -75,6 +75,8 @@ Both changes have tests written first. After tuning: the scheduler has 10 findin
 
 ## Decisions for Shawn
 
+**All three approved by Shawn in PR 15 (17 November 2026).** They are backlog tickets G4-20 (D1), G4-21 (D2) and G4-22 (D3), scheduled straight after G4-01. The re-run is G4-23, after Shawn writes a real DESIGN.md for the scheduler.
+
 These change approved behaviour, so I did not make them myself.
 
 **D1. Check only the first family in a font stack?**
