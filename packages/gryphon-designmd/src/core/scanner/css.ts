@@ -95,7 +95,7 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
       const syntax = error as CssSyntaxError;
       return {
         occurrences: [],
-        error: `could not parse: ${syntax.reason} (line ${syntax.line ?? '?'})`,
+        error: `could not parse: ${syntax.reason} (line ${syntax.line === undefined ? '?' : syntax.line + (options.lineOffset ?? 0)})`,
       };
     }
     throw error;

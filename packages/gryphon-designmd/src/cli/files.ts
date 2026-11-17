@@ -4,8 +4,8 @@ import { join, relative, resolve, sep } from 'node:path';
 
 /** Folders never scanned, with or without git (AC2.9). */
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git']);
-/** File types the CLI checks in v0. Vue follows in G4-01. */
-export const EXTENSIONS = ['.css', '.scss'];
+/** File types the CLI checks. */
+export const EXTENSIONS = ['.css', '.scss', '.vue'];
 
 const toPosix = (path: string): string => path.split(sep).join('/');
 const wanted = (path: string): boolean =>

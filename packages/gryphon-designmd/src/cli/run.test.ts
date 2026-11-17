@@ -137,6 +137,30 @@ describe('gryphon check: results and exit codes (AC5.1, AC5.3)', () => {
     expect(out).toContain('../app/src/x.css');
   });
 
+  it('reports Vue findings at their line and column in the .vue file (G4-01)', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'src/Card.vue':
+        '<template>\n  <div style="padding: 13px"></div>\n</template>\n\n<style scoped>\n.a { color: #6366f1; }\n</style>\n',
+    });
+    const { code, out } = await cli(dir, 'check');
+    expect(code).toBe(1);
+    expect(out).toContain('src/Card.vue');
+    expect(out).toMatch(/2:24 +error +off-token +13px/);
+    expect(out).toMatch(/6:13 +error +off-token +#6366f1/);
+  });
+
+  it('reports a Vue file it could not parse without stopping', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'Bad.vue': '<template><div></template>',
+      'ok.css': '.a { color: red; }',
+    });
+    const { out } = await cli(dir, 'check');
+    expect(out).toMatch(/Bad\.vue: skipped, could not parse: /);
+    expect(out).toContain('ok.css');
+  });
+
   it('reports files it could not parse without stopping (AC2.8)', async () => {
     const dir = project({
       'DESIGN.md': DESIGN,
@@ -183,7 +207,7 @@ describe('gryphon check: DESIGN.md problems exit 2 (AC5.3)', () => {
 });
 
 describe('gryphon check: file discovery (AC2.9)', () => {
-  it('checks .css and .scss, and skips node_modules, dist, build and coverage', async () => {
+  it('checks .css, .scss and .vue, and skips node_modules, dist, build and coverage', async () => {
     const dir = project({
       'DESIGN.md': DESIGN,
       'a.css': '.a { color: red; }',
@@ -195,8 +219,9 @@ describe('gryphon check: file discovery (AC2.9)', () => {
       'coverage/f.css': '.f { color: red; }',
     });
     const { out } = await cli(dir, 'check');
-    expect(out).toContain('2 errors, 0 warnings in 2 files (2 files checked)');
-    expect(out).not.toMatch(/node_modules|dist\/|build\/|coverage\/|c\.vue/);
+    expect(out).toContain('3 errors, 0 warnings in 3 files (3 files checked)');
+    expect(out).toContain('c.vue');
+    expect(out).not.toMatch(/node_modules|dist\/|build\/|coverage\//);
   });
 
   it('respects .gitignore inside a git repository', async () => {

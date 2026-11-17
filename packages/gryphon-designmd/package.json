@@ -12,6 +12,7 @@
     ".": "./src/core/index.ts"
   },
   "dependencies": {
+    "@vue/compiler-dom": "3.5.45",
     "culori": "4.0.2",
     "postcss": "8.5.32",
     "postcss-scss": "4.0.9",

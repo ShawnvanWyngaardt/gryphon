@@ -34,6 +34,6 @@ Or run the built file from inside the other project, so paths in the report are 
 node /path/to/gryphon/packages/gryphon-designmd/dist/src/cli/main.js check
 ```
 
-Version 0 checks `.css` and `.scss` files. Vue files follow next (G4-01).
+It checks `.css`, `.scss` and `.vue` files: Vue `<style>` blocks (CSS and SCSS) and static `style` attributes. Tailwind classes follow later in Gate 4.
 
 **Do not use `npx gryphon`.** Before our package is published, `npx` cannot find a local command with that name, so it downloads an unrelated npm package called `gryphon` instead. After release, the command will be `npx gryphon-designmd`.
