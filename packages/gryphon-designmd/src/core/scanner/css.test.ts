@@ -126,21 +126,27 @@ describe('scanCss: sizes', () => {
 });
 
 describe('scanCss: fonts', () => {
-  it('finds each family in a font-family stack, quoted or not', () => {
+  it('checks only the first family in a stack, quoted or not (D1, approved in PR 15)', () => {
     expect(
       found('.a { font-family: "Inter Display", Atkinson Hyperlegible Next, sans-serif; }'),
-    ).toEqual([
-      '"Inter Display" @ 1:19 [fontFamily]',
-      'Atkinson Hyperlegible Next @ 1:36 [fontFamily]',
-      'sans-serif @ 1:64 [fontFamily]',
+    ).toEqual(['"Inter Display" @ 1:19 [fontFamily]']);
+    expect(found('.a { font-family: Atkinson Hyperlegible Next, Inter; }')).toEqual([
+      'Atkinson Hyperlegible Next @ 1:19 [fontFamily]',
     ]);
   });
 
-  it('reads size and families from the font shorthand, but not the line height', () => {
+  it('does not check fallbacks behind a variable or a system font', () => {
+    expect(found('.a { font-family: var(--font-body), Inter, sans-serif; }')).toEqual([]);
+    expect(found('.a { font-family: $body-font, Inter; }', 'scss')).toEqual([]);
+    expect(found('.a { font-family: system-ui, -apple-system, "Segoe UI", Roboto; }')).toEqual([
+      'system-ui @ 1:19 [fontFamily]',
+    ]);
+  });
+
+  it('reads the size and the first family from the font shorthand, but not the line height', () => {
     expect(found('.a { font: italic 700 15px/1.4 Inter, serif; }')).toEqual([
       '15px @ 1:23 [fontSize]',
       'Inter @ 1:32 [fontFamily]',
-      'serif @ 1:39 [fontFamily]',
     ]);
   });
 

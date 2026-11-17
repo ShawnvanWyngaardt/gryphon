@@ -201,25 +201,24 @@ function sizes(nodes: ValueNode[], category: Category, add: Add): void {
   });
 }
 
-/** Splits a font stack on top-level commas and reports each family. */
+/**
+ * Reports the first family of a font stack (decision D1, approved in
+ * PR 15). Fallbacks only render when the first font fails, so they are
+ * not a design choice. If the first entry is a variable or a function,
+ * nothing is reported: the real family comes from elsewhere.
+ */
 function families(nodes: ValueNode[], raw: string, add: Add): void {
-  let group: ValueNode[] = [];
-  const flush = (): void => {
-    const parts = group.filter((n) => n.type !== 'space' && n.type !== 'comment');
-    group = [];
-    const first = parts[0];
-    const last = parts.at(-1);
-    if (first === undefined || last === undefined) return;
-    if (parts.some((n) => n.type === 'function' || (n.type === 'word' && isReference(n.value)))) {
-      return;
-    }
-    add('fontFamily', raw.slice(first.sourceIndex, last.sourceEndIndex), first.sourceIndex);
-  };
-  for (const node of nodes) {
-    if (node.type === 'div' && node.value === ',') flush();
-    else group.push(node);
+  const comma = nodes.findIndex((n) => n.type === 'div' && n.value === ',');
+  const group = (comma === -1 ? nodes : nodes.slice(0, comma)).filter(
+    (n) => n.type !== 'space' && n.type !== 'comment',
+  );
+  const first = group[0];
+  const last = group.at(-1);
+  if (first === undefined || last === undefined) return;
+  if (group.some((n) => n.type === 'function' || (n.type === 'word' && isReference(n.value)))) {
+    return;
   }
-  flush();
+  add('fontFamily', raw.slice(first.sourceIndex, last.sourceEndIndex), first.sourceIndex);
 }
 
 /** `font: [style] [weight] <size>[/<line-height>] <family>, ...` */
