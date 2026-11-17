@@ -173,6 +173,7 @@ Acceptance criteria:
 
 - AC3.1 Colour distance uses CIEDE2000 (or OKLab Euclidean distance, decided at Gate 2) on the converted colours. The nearest colour token is the one with the smallest distance. Ties go to the token defined first.
 - AC3.2 Dimension distance is the absolute difference in px. Only tokens of the same category are compared (spacing values are matched to `spacing`, radius to `rounded`, font sizes to `typography.*.fontSize`).
+- AC3.2a **Changed by decision D2 (PR 15):** a category that DESIGN.md has no usable tokens for (colours, font families, font sizes, spacing or radius) is not checked. The CLI prints one notice per such category on stderr, for example "DESIGN.md defines no spacing tokens, so spacing was not checked." Found in G3-11 dogfooding, where this caused 124 of 164 findings.
 - AC3.3 The suggested fix is printed as text in the idiom of the file: a CSS custom property for CSS, SCSS and Vue styles (naming follows `@google/design.md export --format css-tailwind` by default, configurable) and a Tailwind class for Tailwind input. The tool never edits the file.
 - AC3.4 Line and column are correct for every file type, including values inside Vue `<template>` and `style` attributes. Tested by golden files.
 - AC3.5 Findings are sorted by file, then line, then column, so output is stable across runs.

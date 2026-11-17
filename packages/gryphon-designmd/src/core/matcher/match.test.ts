@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { parseDesignMd } from '../parser/parse.js';
 import type { Category, Occurrence, TokenSet } from '../types.js';
-import { createMatcher } from './match.js';
+import { createMatcher, ungovernedCategories } from './match.js';
 
 function tokenSet(yaml: string): TokenSet {
   const result = parseDesignMd(`---\n${yaml}---\n`);
@@ -218,14 +218,34 @@ describe('font families', () => {
   });
 });
 
-describe('a category with no tokens at all', () => {
-  it('reports off-token with no nearest token', () => {
-    const noRadius = createMatcher(tokenSet('colors:\n  primary: "#000"\n'));
-    expect(noRadius(occ('radius', '4px'))).toMatchObject({
-      rule: 'off-token',
-      nearest: null,
-      message: '4px is not a DESIGN.md radius value. DESIGN.md defines no radius values.',
-    });
+describe('a category with no tokens at all (D2, approved in PR 15)', () => {
+  const colorsOnly = tokenSet('colors:\n  primary: "#000"\n');
+
+  it('is not checked: values in it give no finding', () => {
+    const m = createMatcher(colorsOnly);
+    expect(m(occ('radius', '4px'))).toBeNull();
+    expect(m(occ('spacing', '13px'))).toBeNull();
+    expect(m(occ('fontSize', '14px'))).toBeNull();
+    expect(m(occ('fontFamily', 'Inter'))).toBeNull();
+    // Colours are governed, so they are still checked.
+    expect(m(occ('color', 'red'))?.rule).toBe('off-token');
+  });
+
+  it('is listed by ungovernedCategories, in a fixed order', () => {
+    expect(ungovernedCategories(colorsOnly)).toEqual([
+      'fontFamily',
+      'fontSize',
+      'spacing',
+      'radius',
+    ]);
+    expect(ungovernedCategories(tokens)).toEqual([]);
+  });
+
+  it('counts tokens that cannot be used for matching as missing', () => {
+    // A spacing token that is not a dimension is skipped by the parser.
+    expect(
+      ungovernedCategories(tokenSet('colors:\n  a: "#000"\nspacing:\n  cols: 12\n')),
+    ).toContain('spacing');
   });
 });
 

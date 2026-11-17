@@ -63,16 +63,19 @@ interface Prepared<T> {
  * - a `raw-token-value` warning when it equals a token,
  * - an `off-token` error with the nearest token when it does not,
  * - `null` when the value cannot be judged (`currentColor`, `auto`, `0`,
- *   generic font families and similar; see AC2.2 and AC2.3).
+ *   generic font families and similar; see AC2.2 and AC2.3), or when
+ *   DESIGN.md has no tokens for its category (decision D2).
  */
-export function createMatcher(
-  tokenSet: TokenSet,
-  options: MatcherOptions = {},
-): (occurrence: Occurrence) => Finding | null {
-  const rootPx = options.rootPx ?? 16;
+interface PreparedTokens {
+  colors: Prepared<NormalColor>[];
+  sizes: Map<Category, Prepared<number>[]>;
+  families: Token[];
+}
+
+/** Converts the tokens once, so each value is not parsed again per occurrence. */
+function prepare(tokenSet: TokenSet, rootPx: number): PreparedTokens {
   const of = (category: Category): Token[] =>
     tokenSet.tokens.filter((t) => t.category === category);
-
   const colors: Prepared<NormalColor>[] = [];
   for (const token of of('color')) {
     const value = parseColor(token.value);
@@ -87,7 +90,39 @@ export function createMatcher(
     }
     sizes.set(category, list);
   }
-  const families = of('fontFamily');
+  return { colors, sizes, families: of('fontFamily') };
+}
+
+const CATEGORY_ORDER: readonly Category[] = [
+  'color',
+  'fontFamily',
+  'fontSize',
+  'spacing',
+  'radius',
+];
+
+/**
+ * Categories DESIGN.md has no usable tokens for. The matcher does not
+ * check them, and the CLI prints one notice per category (decision D2,
+ * approved in PR 15). Tokens that cannot be converted count as missing.
+ */
+export function ungovernedCategories(tokenSet: TokenSet, options: MatcherOptions = {}): Category[] {
+  const { colors, sizes, families } = prepare(tokenSet, options.rootPx ?? 16);
+  const count = (category: Category): number =>
+    category === 'color'
+      ? colors.length
+      : category === 'fontFamily'
+        ? families.length
+        : (sizes.get(category)?.length ?? 0);
+  return CATEGORY_ORDER.filter((category) => count(category) === 0);
+}
+
+export function createMatcher(
+  tokenSet: TokenSet,
+  options: MatcherOptions = {},
+): (occurrence: Occurrence) => Finding | null {
+  const rootPx = options.rootPx ?? 16;
+  const { colors, sizes, families } = prepare(tokenSet, rootPx);
 
   const finding = (
     occurrence: Occurrence,
@@ -138,7 +173,8 @@ export function createMatcher(
           );
       if (best === null || distance < best.distance) best = { token, distance, sameAlpha };
     }
-    if (best === null) return noTokens(occurrence);
+    // No tokens in this category: not governed by DESIGN.md (D2).
+    if (best === null) return null;
     const { token, distance } = best;
     const name = `${token.path} (${token.value})`;
     let message: string;
@@ -167,7 +203,8 @@ export function createMatcher(
         best = candidate;
       }
     }
-    if (best === null) return noTokens(occurrence);
+    // No tokens in this category: not governed by DESIGN.md (D2).
+    if (best === null) return null;
     const distance = round(Math.abs(best.value - target), 4);
     const approximate = usesEm(occurrence.value) || usesEm(best.token.value);
     const name = `${best.token.path} (${best.token.value})`;
@@ -197,24 +234,13 @@ export function createMatcher(
         false,
       );
     }
-    if (families.length === 0) return noTokens(occurrence);
+    if (families.length === 0) return null;
     const allowed = [...new Set(families.map((t) => t.value))].join(', ');
     return finding(
       occurrence,
       false,
       null,
       `${occurrence.value} is not a DESIGN.md font family. DESIGN.md defines: ${allowed}.`,
-      false,
-    );
-  }
-
-  function noTokens(occurrence: Occurrence): Finding {
-    const name = CATEGORY_NAME[occurrence.category];
-    return finding(
-      occurrence,
-      false,
-      null,
-      `${occurrence.value} is not a DESIGN.md ${name} value. DESIGN.md defines no ${name} values.`,
       false,
     );
   }

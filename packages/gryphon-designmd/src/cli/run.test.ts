@@ -200,6 +200,22 @@ describe('gryphon check: DESIGN.md problems exit 2 (AC5.3)', () => {
     expect(err).toMatch(/DESIGN\.md:\d+:\d+: warning: "motion" is not a token group/);
   });
 
+  it('skips categories DESIGN.md has no tokens for, with one notice each (D2)', async () => {
+    const dir = project({
+      'DESIGN.md': '---\ncolors:\n  primary: "#1B1A17"\n---\n',
+      'a.css': '.a { color: red; padding: 13px; border-radius: 3px; }',
+    });
+    const { code, out, err } = await cli(dir, 'check');
+    expect(code).toBe(1);
+    expect(out).toContain('1 error, 0 warnings');
+    expect(out).not.toContain('13px');
+    expect(err).toContain('DESIGN.md defines no spacing tokens, so spacing was not checked.');
+    expect(err).toContain('DESIGN.md defines no radius tokens, so radius was not checked.');
+    expect(err).toContain(
+      'DESIGN.md defines no font family tokens, so font families were not checked.',
+    );
+  });
+
   it('reads DESIGN.md from --design', async () => {
     const dir = project({ 'docs/DESIGN.md': DESIGN, 'a.css': '.a { color: #1B1A17; }' });
     expect((await cli(dir, 'check', '--design', 'docs/DESIGN.md')).code).toBe(0);
