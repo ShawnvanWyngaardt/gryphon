@@ -37,3 +37,29 @@ node /path/to/gryphon/packages/gryphon-designmd/dist/src/cli/main.js check
 It checks `.css`, `.scss` and `.vue` files: Vue `<style>` blocks (CSS and SCSS) and static `style` attributes. Tailwind classes follow later in Gate 4.
 
 **Do not use `npx gryphon`.** Before our package is published, `npx` cannot find a local command with that name, so it downloads an unrelated npm package called `gryphon` instead. After release, the command will be `npx gryphon-designmd`.
+
+## Configuration
+
+Everything works without a config file. To change the defaults, add `gryphon.config.json` to your project root, or pass `--config <path>`. It is plain JSON: it is read, never run. Every field is optional:
+
+```json
+{
+  "design": "docs/DESIGN.md",
+  "include": ["src/**"],
+  "exclude": ["**/legacy/**"],
+  "tokenSources": ["src/styles/tokens.css"],
+  "rootPx": 16,
+  "rules": { "raw-token-value": "off", "off-token": "error" }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `design` | Path to DESIGN.md. `--design` wins over it. |
+| `include` | Only check files matching one of these globs. |
+| `exclude` | Do not check files matching one of these globs. |
+| `tokenSources` | Files where your tokens are defined. Used to tell token definitions from local redefinitions (coming in G4-22). |
+| `rootPx` | Pixels per `rem` and `em`. Default 16. |
+| `rules` | `"error"`, `"warning"` or `"off"` for `off-token` and `raw-token-value`. |
+
+Globs support `**` (any folders), `*` (anything in one folder) and `?` (one character), with `/` between folders.

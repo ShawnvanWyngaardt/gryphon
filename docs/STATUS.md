@@ -21,7 +21,8 @@ Last updated: 2026-11-15
 - G3-11 dogfooding (merged, PR 15; Gate 3 approved): CLI run on this repo, the club shift scheduler and VitePress. 164 findings logged in `docs/DOGFOOD.md`; two false-positive causes fixed (`@font-face`, `-apple-system`). Gate 4 re-estimated in `docs/BACKLOG.md`.
 - G4-01 Vue scanner (merged, PR 18): `<style>` and `<style lang="scss">` blocks and static `style` attributes in `.vue` files, with positions in the `.vue` file; the CLI now checks `.vue`. Written tests first.
 - G4-21 D2 (merged, PR 19): categories DESIGN.md has no tokens for are not checked; one notice each on stderr. VitePress dogfood run: 119 findings to 0, with 4 notices. ADR 0004 notes the 29 KB compiler-dom measurement (review of PR 18).
-- G4-20 D1 (in review, PR 20): only the first family of a font stack is checked. Scheduler `main.css`: the `'Segoe UI'` and `Roboto` fallbacks are gone, `'Inter'` stays.
+- G4-20 D1 (merged, PR 20): only the first family of a font stack is checked. Scheduler `main.css`: the `'Segoe UI'` and `Roboto` fallbacks are gone, `'Inter'` stays.
+- G4-04 config file (in review): `gryphon.config.json` or `--config`, plain JSON, validated: `design`, `include`, `exclude`, `tokenSources`, `rootPx`, `rules`. Summary says "in the checked categories" when categories were skipped (review of PR 19). Written tests first.
 
 ## Next
 

@@ -91,7 +91,7 @@ Gate 3 review happens here, with the CLI running on real CSS and SCSS.
 | 8 | G4-05 | Suggested fixes as text: CSS custom property or Tailwind class | M | M | 250 | AC3.3 |
 | 9 | G4-02a | Tailwind part 1: class reader (variants, `!`, `-`, `/50`, arbitrary values) and default theme table (tests first) | M | L | 500 | AC2.5 |
 | 10 | G4-02b | Tailwind part 2: project `@theme` blocks and `@apply` (tests first) | M | (in G4-02) | 350 | AC2.5 |
-| 11 | G4-08 | GitHub Action: scan files the PR touches, annotations, job summary | M | M | 400 | AC6.1, 6.2, 6.4, 6.5 |
+| 11 | G4-08 | GitHub Action: scan files the PR touches, annotations, job summary. Include the D2 "not checked" notices in the JSON report, which needs a schema version decision (review of PR 19). | M | M | 400 | AC6.1, 6.2, 6.4, 6.5 |
 | 12 | G4-09 | GitHub Action: single updating PR comment, fork fallback | M | M | 250 | AC6.3, 6.4, 6.6 |
 | 13 | G4-10 | Playground shell: Vue 3 and Vite, layout and theme from DESIGN.md, self-hosted fonts, CSP | M | M | 300 | FR7, AC7.3 |
 | 14 | G4-11 | Playground: text areas, file type picker, example, check in browser, findings list, live region | M | M | 350 | AC7.1, NFR-A4 |
