@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-11-15
+Last updated: 2026-11-19
 
 ## Done
 
@@ -24,6 +24,8 @@ Last updated: 2026-11-15
 - G4-20 D1 (merged, PR 20): only the first family of a font stack is checked. Scheduler `main.css`: the `'Segoe UI'` and `Roboto` fallbacks are gone, `'Inter'` stays.
 - G4-04 config file (merged, PR 21): `gryphon.config.json` or `--config`, plain JSON, validated: `design`, `include`, `exclude`, `tokenSources`, `rootPx`, `rules`. Summary says "in the checked categories" when categories were skipped (review of PR 19). Written tests first.
 - G4-22 D3 (merged, PR 22): colours in custom property definitions outside token files are checked. The scheduler's 20 local colour variables are now reported (8 repeat a token, 12 are not tokens); VitePress stays at 0.
+
+- CLAUDE.md split (in review, branch `claude/split-claude-md`): `CLAUDE.md` keeps the rules for every session and a "Read when" index. Workflow, architecture, and testing and CI details moved to `docs/claude/`, read only when a task needs them.
 
 ## Next
 
