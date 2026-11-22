@@ -40,6 +40,24 @@ It checks `.css`, `.scss` and `.vue` files: Vue `<style>` blocks (CSS and SCSS) 
 
 **Do not use `npx gryphon`.** Before our package is published, `npx` cannot find a local command with that name, so it downloads an unrelated npm package called `gryphon` instead. After release, the command will be `npx gryphon-designmd`.
 
+## Ignore comments
+
+To accept a value on purpose, put an ignore comment above it. A reason after a colon is optional but helps reviewers:
+
+```css
+.partner-logo {
+  /* gryphon-ignore-next-line: partner brand colour, not ours */
+  color: #e4002b;
+}
+```
+
+| Comment | Effect |
+| --- | --- |
+| `gryphon-ignore-next-line` | Ignores findings on the next line. |
+| `gryphon-ignore-file` | Placed before any rule, ignores the whole file. In a `.vue` file, an HTML comment before the first block ignores the file; inside a `<style>` block it ignores that block only. |
+
+They work in CSS comments (`/* */`), SCSS comments (`//`) and, in Vue templates, HTML comments (`<!-- -->`). The spelling must be exact, so a typo is not silently accepted. Every ignored finding is counted: the report says, for example, "1 suppressed by ignore comments.", and the JSON report has `summary.suppressed`.
+
 ## Configuration
 
 Everything works without a config file. To change the defaults, add `gryphon.config.json` to your project root, or pass `--config <path>`. It is plain JSON: it is read, never run. Every field is optional:

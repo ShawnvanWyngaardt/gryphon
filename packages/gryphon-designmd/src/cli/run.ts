@@ -10,6 +10,7 @@ import {
   scanCss,
   scanVue,
   ungovernedCategories,
+  isSuppressed,
   type Category,
   type Finding,
   type SkippedFile,
@@ -159,6 +160,7 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
   );
   const findings: Finding[] = [];
   const skipped: SkippedFile[] = [];
+  let suppressed = 0;
   for (const file of files) {
     const source = readFileSync(resolve(io.cwd, file), 'utf8');
     // With tokenSources in the config, exactly those files hold tokens (D3).
@@ -179,6 +181,11 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
       // Per-rule severity from the config; "off" drops the finding (AC2.7).
       const setting = config.rules?.[finding.rule];
       if (setting === 'off') continue;
+      // Ignore comments (G4-03): counted, never hidden silently (AC2.6).
+      if (isSuppressed(result.ignore, finding.line)) {
+        suppressed += 1;
+        continue;
+      }
       findings.push(setting === undefined ? finding : { ...finding, severity: setting });
     }
   }
@@ -188,7 +195,7 @@ async function check(argv: readonly string[], io: Io): Promise<number> {
     designFile: designPath,
     filesScanned: files.length,
     findings,
-    suppressed: 0,
+    suppressed,
     skipped,
   });
 

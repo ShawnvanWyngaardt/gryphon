@@ -338,6 +338,55 @@ describe('gryphon check: summary when categories were skipped (review of PR 19)'
   });
 });
 
+describe('gryphon check: ignore comments (G4-03, AC2.6)', () => {
+  it('suppresses a finding and counts it in the summary', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css':
+        '.a {\n  /* gryphon-ignore-next-line: partner logo */\n  color: #6366f1;\n  padding: 13px;\n}',
+    });
+    const { code, out } = await cli(dir, 'check');
+    expect(code).toBe(1);
+    expect(out).not.toContain('#6366f1');
+    expect(out).toContain('13px');
+    expect(out).toContain('1 suppressed by ignore comments.');
+  });
+
+  it('can make the run pass when every error is suppressed', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': '/* gryphon-ignore-file */\n.a { color: #6366f1; }',
+    });
+    const { code, out } = await cli(dir, 'check');
+    expect(code).toBe(0);
+    expect(out).toContain('1 suppressed by ignore comments.');
+  });
+
+  it('counts suppressions in the JSON report', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': '/* gryphon-ignore-file */\n.a { color: red; padding: 8px; }',
+    });
+    const report = JSON.parse((await cli(dir, 'check', '--format', 'json')).out);
+    expect(report.summary).toMatchObject({ errors: 0, warnings: 0, suppressed: 2 });
+  });
+
+  it('does not count a finding whose rule is turned off in the config', async () => {
+    const dir = project({
+      'DESIGN.md': DESIGN,
+      'a.css': '/* gryphon-ignore-file */\n.a { padding: 8px; }',
+      'gryphon.config.json': '{ "rules": { "raw-token-value": "off" } }',
+    });
+    expect((await cli(dir, 'check')).out).not.toContain('suppressed');
+    // Control: with the rule on, the same file counts one suppression.
+    const control = project({
+      'DESIGN.md': DESIGN,
+      'a.css': '/* gryphon-ignore-file */\n.a { padding: 8px; }',
+    });
+    expect((await cli(control, 'check')).out).toContain('1 suppressed by ignore comments.');
+  });
+});
+
 describe('gryphon check: file discovery (AC2.9)', () => {
   it('checks .css, .scss and .vue, and skips node_modules, dist, build and coverage', async () => {
     const dir = project({
