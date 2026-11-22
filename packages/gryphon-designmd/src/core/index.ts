@@ -29,3 +29,5 @@ export { scanCss } from './scanner/css.js';
 export type { ScanCssOptions, ScanResult } from './scanner/css.js';
 export { scanVue } from './scanner/vue.js';
 export type { ScanVueOptions } from './scanner/vue.js';
+export { isSuppressed, parseDirective } from './scanner/ignore.js';
+export type { Directive, IgnoreInfo } from './scanner/ignore.js';

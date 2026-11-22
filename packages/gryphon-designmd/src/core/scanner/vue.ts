@@ -2,6 +2,7 @@ import {
   NodeTypes,
   parse,
   type AttributeNode,
+  type CommentNode,
   type ElementNode,
   type RootNode,
   type TemplateChildNode,
@@ -9,6 +10,7 @@ import {
 
 import type { Occurrence } from '../types.js';
 import { scanCss, type ScanResult } from './css.js';
+import { NO_IGNORES, parseDirective, sortedLines } from './ignore.js';
 
 /** Style block languages we can read. Others (less, stylus, indented sass) are skipped. */
 const STYLE_LANGS: Record<string, 'css' | 'scss'> = { '': 'css', css: 'css', scss: 'scss' };
@@ -36,32 +38,59 @@ export function scanVue(source: string, file: string, options: ScanVueOptions = 
   try {
     root = parse(source, {
       parseMode: 'sfc',
+      // Keep HTML comments, for gryphon-ignore comments (G4-03).
+      comments: true,
       onError: (error) => {
         parseError ??= `could not parse: ${error.message}${error.loc ? ` (line ${error.loc.start.line})` : ''}`;
       },
     });
   } catch (error) {
-    return { occurrences: [], error: `could not parse: ${(error as Error).message}` };
+    return {
+      occurrences: [],
+      ignore: NO_IGNORES,
+      error: `could not parse: ${(error as Error).message}`,
+    };
   }
-  if (parseError !== undefined) return { occurrences: [], error: parseError };
+  if (parseError !== undefined) return { occurrences: [], ignore: NO_IGNORES, error: parseError };
 
   const occurrences: Occurrence[] = [];
   const blocks = root.children.filter((n): n is ElementNode => n.type === NodeTypes.ELEMENT);
 
+  // Ignore comments (G4-03): HTML comments anywhere, and
+  // gryphon-ignore-file as a comment before the first block.
+  const ignoredLines: number[] = [];
+  const firstNode = root.children.find((n) => n.type !== NodeTypes.TEXT);
+  const ignoreFile =
+    firstNode?.type === NodeTypes.COMMENT && parseDirective(firstNode.content) === 'file';
+  for (const comment of comments(root.children)) {
+    if (parseDirective(comment.content) === 'next-line')
+      ignoredLines.push(comment.loc.end.line + 1);
+  }
+
   for (const block of blocks) {
     if (block.tag === 'style') {
       const result = scanStyleBlock(source, file, block, options.tokenSource);
-      if (result.error !== undefined) return { occurrences: [], error: result.error };
+      if (result.error !== undefined) {
+        return { occurrences: [], ignore: NO_IGNORES, error: result.error };
+      }
       occurrences.push(...result.occurrences);
+      ignoredLines.push(...result.ignore.lines);
+      // gryphon-ignore-file inside a style block ignores that block only.
+      if (result.ignore.file) {
+        for (let line = block.loc.start.line; line <= block.loc.end.line; line++)
+          ignoredLines.push(line);
+      }
     } else if (block.tag === 'template') {
       for (const attr of styleAttributes(block.children)) {
         const result = scanStyleAttribute(file, attr);
-        if (result.error !== undefined) return { occurrences: [], error: result.error };
+        if (result.error !== undefined) {
+          return { occurrences: [], ignore: NO_IGNORES, error: result.error };
+        }
         occurrences.push(...result.occurrences);
       }
     }
   }
-  return { occurrences };
+  return { occurrences, ignore: { file: ignoreFile, lines: sortedLines(ignoredLines) } };
 }
 
 function attribute(element: ElementNode, name: string): AttributeNode | undefined {
@@ -76,13 +105,13 @@ function scanStyleBlock(
   block: ElementNode,
   tokenSource: boolean | undefined,
 ): ScanResult {
-  if (attribute(block, 'src') !== undefined) return { occurrences: [] };
+  if (attribute(block, 'src') !== undefined) return { occurrences: [], ignore: NO_IGNORES };
   const lang = (attribute(block, 'lang')?.value?.content ?? '').toLowerCase();
   const syntax = STYLE_LANGS[lang];
-  if (syntax === undefined) return { occurrences: [] };
+  if (syntax === undefined) return { occurrences: [], ignore: NO_IGNORES };
 
   const content = block.children[0];
-  if (content === undefined) return { occurrences: [] };
+  if (content === undefined) return { occurrences: [], ignore: NO_IGNORES };
   const start = content.loc.start;
   const end = block.children.at(-1)?.loc.end ?? content.loc.end;
   return scanCss(source.slice(start.offset, end.offset), file, {
@@ -91,6 +120,18 @@ function scanStyleBlock(
     columnOffset: start.column - 1,
     ...(tokenSource === undefined ? {} : { tokenSource }),
   });
+}
+
+/** All comment nodes, depth first. */
+function comments(
+  children: readonly (TemplateChildNode | RootNode['children'][number])[],
+): CommentNode[] {
+  const found: CommentNode[] = [];
+  for (const child of children) {
+    if (child.type === NodeTypes.COMMENT) found.push(child);
+    else if (child.type === NodeTypes.ELEMENT) found.push(...comments(child.children));
+  }
+  return found;
 }
 
 /** All static `style` attributes in the template, depth first. */
@@ -108,7 +149,7 @@ function styleAttributes(children: TemplateChildNode[]): AttributeNode[] {
 /** A style attribute holds declarations only, so wrap them in a rule for PostCSS. */
 function scanStyleAttribute(file: string, attr: AttributeNode): ScanResult {
   const value = attr.value;
-  if (value === undefined) return { occurrences: [] };
+  if (value === undefined) return { occurrences: [], ignore: NO_IGNORES };
   const raw = value.loc.source;
   const quoted = raw.startsWith('"') || raw.startsWith("'");
   const text = quoted ? raw.slice(1, -1) : raw;

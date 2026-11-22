@@ -5,6 +5,7 @@ import valueParser, { type Node as ValueNode } from 'postcss-value-parser';
 import { parseColor } from '../values/color.js';
 import { parseDimension } from '../values/dimension.js';
 import type { Category, Occurrence } from '../types.js';
+import { NO_IGNORES, parseDirective, sortedLines, type IgnoreInfo } from './ignore.js';
 
 export interface ScanCssOptions {
   syntax: 'css' | 'scss';
@@ -25,6 +26,8 @@ export interface ScanResult {
   occurrences: Occurrence[];
   /** Set when the file could not be parsed (AC2.8). */
   error?: string;
+  /** Lines or the whole file suppressed by ignore comments (G4-03). */
+  ignore: IgnoreInfo;
 }
 
 /** Properties whose colours we check (SPEC FR2). Shorthands give only their colour part. */
@@ -102,6 +105,7 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
       const syntax = error as CssSyntaxError;
       return {
         occurrences: [],
+        ignore: NO_IGNORES,
         error: `could not parse: ${syntax.reason} (line ${syntax.line === undefined ? '?' : syntax.line + (options.lineOffset ?? 0)})`,
       };
     }
@@ -181,7 +185,21 @@ export function scanCss(source: string, file: string, options: ScanCssOptions): 
     }
   });
 
-  return { occurrences };
+  // Ignore comments (G4-03). gryphon-ignore-file only counts before any rule.
+  const ignoredLines: number[] = [];
+  let ignoreFile = false;
+  root.walkComments((comment) => {
+    const directive = parseDirective(comment.text);
+    const endLine = comment.source?.end?.line;
+    if (directive === 'next-line' && endLine !== undefined) {
+      ignoredLines.push(endLine + lineOffset + 1);
+    } else if (directive === 'file' && comment.parent === root) {
+      const index = root.index(comment);
+      ignoreFile ||= root.nodes.slice(0, index).every((node) => node.type === 'comment');
+    }
+  });
+
+  return { occurrences, ignore: { file: ignoreFile, lines: sortedLines(ignoredLines) } };
 }
 
 type Add = (category: Category, value: string, sourceIndex: number) => void;

@@ -287,6 +287,56 @@ describe('scanCss: comments, values across lines and positions', () => {
   });
 });
 
+describe('scanCss: ignore comments (G4-03, AC2.6)', () => {
+  const ignore = (source: string, syntax: 'css' | 'scss' = 'css') =>
+    scanCss(source, 'a.css', { syntax }).ignore;
+
+  it('marks the line after a gryphon-ignore-next-line comment', () => {
+    expect(
+      ignore('.a {\n  /* gryphon-ignore-next-line */\n  color: red;\n  padding: 3px;\n}'),
+    ).toEqual({
+      file: false,
+      lines: [3],
+    });
+  });
+
+  it('uses the line after the end of a comment that spans lines', () => {
+    expect(
+      ignore('.a {\n  /* gryphon-ignore-next-line:\n     partner logo */\n  color: red;\n}').lines,
+    ).toEqual([4]);
+  });
+
+  it('accepts SCSS // comments', () => {
+    expect(ignore('.a {\n  // gryphon-ignore-next-line\n  color: red;\n}', 'scss').lines).toEqual([
+      3,
+    ]);
+  });
+
+  it('ignores the whole file with gryphon-ignore-file before any rule', () => {
+    expect(ignore('/* gryphon-ignore-file: generated */\n.a { color: red; }').file).toBe(true);
+  });
+
+  it('does not ignore the file when the comment comes after a rule', () => {
+    expect(ignore('.a { color: red; }\n/* gryphon-ignore-file */').file).toBe(false);
+  });
+
+  it('still reports the occurrences, so the CLI can count what was suppressed', () => {
+    const result = scanCss('/* gryphon-ignore-next-line */\n.a { color: red; }', 'a.css', {
+      syntax: 'css',
+    });
+    expect(result.occurrences).toHaveLength(1);
+    expect(result.ignore.lines).toEqual([2]);
+  });
+
+  it('applies the line offset, for CSS inside a Vue file', () => {
+    const result = scanCss('/* gryphon-ignore-next-line */\n.a { color: red; }', 'a.vue', {
+      syntax: 'css',
+      lineOffset: 10,
+    });
+    expect(result.ignore.lines).toEqual([12]);
+  });
+});
+
 describe('scanCss: broken files (AC2.8)', () => {
   it('returns an error instead of throwing', () => {
     const result = scanCss('.a { color: red;', 'broken.css', { syntax: 'css' });

@@ -91,6 +91,37 @@ describe('scanVue (G4-01)', () => {
     expect(values(false)).toEqual(['#000', '#fff']);
   });
 
+  it('reads ignore comments in templates and in style blocks (G4-03)', () => {
+    const sfc = [
+      '<template>',
+      '  <!-- gryphon-ignore-next-line -->',
+      '  <i style="color: red"></i>',
+      '  <b style="color: blue"></b>',
+      '</template>',
+      '<style>',
+      '/* gryphon-ignore-next-line */',
+      '.a { padding: 3px; }',
+      '</style>',
+    ].join('\n');
+    expect(scanVue(sfc, 'a.vue').ignore).toEqual({ file: false, lines: [3, 8] });
+  });
+
+  it('ignores the whole file with an HTML comment before the first block', () => {
+    expect(
+      scanVue('<!-- gryphon-ignore-file -->\n<style>.a { color: red; }</style>', 'a.vue').ignore
+        .file,
+    ).toBe(true);
+  });
+
+  it('turns a gryphon-ignore-file comment in a style block into that block only', () => {
+    const sfc =
+      '<style>\n/* gryphon-ignore-file */\n.a { color: red; }\n</style>\n<style>\n.b { color: blue; }\n</style>';
+    const result = scanVue(sfc, 'a.vue');
+    expect(result.ignore.file).toBe(false);
+    expect(result.ignore.lines).toContain(3);
+    expect(result.ignore.lines).not.toContain(6);
+  });
+
   it('returns an error for a broken template, without throwing (AC2.8)', () => {
     const result = scanVue('<template><div></template>', 'broken.vue');
     expect(result.occurrences).toEqual([]);
