@@ -64,4 +64,4 @@ The Action and the playground do not exist yet (Gate 4). ADR 0002 says where the
 
 ## Runtime dependencies
 
-`culori`, `postcss`, `postcss-scss`, `postcss-value-parser`, `yaml`. All pinned to exact versions. No native binaries, no browser engine. Adding one needs a justification in the PR and Shawn's review.
+`@vue/compiler-dom` (parse only, ADR 0004), `culori`, `postcss`, `postcss-scss`, `postcss-value-parser`, `yaml`. All pinned to exact versions. No native binaries, no browser engine. Adding one needs a justification in the PR and Shawn's review.
