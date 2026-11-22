@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-11-19
+Last updated: 2026-11-22
 
 ## Done
 
@@ -24,14 +24,19 @@ Last updated: 2026-11-19
 - G4-20 D1 (merged, PR 20): only the first family of a font stack is checked. Scheduler `main.css`: the `'Segoe UI'` and `Roboto` fallbacks are gone, `'Inter'` stays.
 - G4-04 config file (merged, PR 21): `gryphon.config.json` or `--config`, plain JSON, validated: `design`, `include`, `exclude`, `tokenSources`, `rootPx`, `rules`. Summary says "in the checked categories" when categories were skipped (review of PR 19). Written tests first.
 - G4-22 D3 (merged, PR 22): colours in custom property definitions outside token files are checked. The scheduler's 20 local colour variables are now reported (8 repeat a token, 12 are not tokens); VitePress stays at 0.
-
-- CLAUDE.md split (in review, branch `claude/split-claude-md`): `CLAUDE.md` keeps the rules for every session and a "Read when" index. Workflow, architecture, and testing and CI details moved to `docs/claude/`, read only when a task needs them.
+- Audit gate (merged, PR 25): runtime dependencies on every PR, full audit weekly (option C).
+- CLAUDE.md split (merged, PR 26, by Shawn): `CLAUDE.md` keeps the rules for every session and a "Read when" index. Workflow, architecture, and testing and CI details moved to `docs/claude/`, read only when a task needs them.
+- G4-03 ignore comments (in review, PR 27): `gryphon-ignore-next-line` and `gryphon-ignore-file` in CSS, SCSS and HTML comments; every suppressed finding is counted in `summary.suppressed`. Written tests first.
+- G4-07 benchmark (merged, minor PR 28): 1,000 generated files checked in CI in 1.3 to 1.7 s, against a 15 s limit and a 512 MB heap.
+- G4-18 CONTRIBUTING.md (merged, minor PR 29), including the `schemaVersion` bump rule.
 
 ## Next
 
 - **Gate 3 approved (PR 15).** D1, D2 and D3 approved.
 - Gate 4 order (Shawn, PR 15): G4-01 Vue scanner, then D2 (G4-21), D1 (G4-20), config file (G4-04) with D3 (G4-22), then the re-run on the club shift scheduler (G4-23). Tailwind, the Action and the playground after that.
-- G4-23 waits for Shawn's real DESIGN.md for the scheduler.
+- G4-23 waits for Shawn's real DESIGN.md for the scheduler (skipped for now, Shawn, 22 November).
+- Next ticket: G4-05 (suggested fixes).
+- Waiting on Shawn: review of PR 27 (two decisions in it); in the repo settings, private vulnerability reporting (PR 29), Dependabot security alerts and updates, and "Tests on Windows (Node 24)" as a required check; optional: run the benchmark on Windows too.
 - Open question from PR 9: did an editor pop up when Shawn ran Google's CLI? The answer decides whether section B of the issue draft stays.
 
 ## Blocked
