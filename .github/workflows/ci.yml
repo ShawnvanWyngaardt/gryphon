@@ -40,6 +40,9 @@ jobs:
       - run: npm run build
       - run: npm run gryphon -- --version
       - run: npm run gryphon -- check
+      # NFR-P1 and NFR-P3: 1,000 generated files must take under 15 s
+      # here (10 s is the laptop target) with the heap capped at 512 MB.
+      - run: npm run bench
 
   tests:
     name: Tests and coverage (Node ${{ matrix.node }})
