@@ -267,7 +267,7 @@ These are not v1. Each needs its own spec update and approval before work starts
 
 ### Performance (NFR-P)
 
-- NFR-P1 Scan 1,000 typical UI files (a mix of CSS, SCSS and Vue, mean 150 lines each) in under 10 seconds wall time on a 4-core laptop with Node 22, excluding the one-time `npx` download. **Confirmed with a change:** I expect this to be easy [Guessing: we read text and use lightweight parsers, so 2 to 3 seconds seems likely, but I have not measured]. I propose we keep 10 seconds as the hard limit and add a benchmark fixture in CI that fails if a run on the CI runner exceeds 15 seconds (CI runners are slower than laptops).
+- NFR-P1 Scan 1,000 typical UI files (a mix of CSS, SCSS and Vue, mean 150 lines each) in under 10 seconds wall time on a 4-core laptop with Node 22, excluding the one-time `npx` download. **Confirmed with a change:** I expect this to be easy (measured in G4-07, 22 November 2026: about 1.3 to 1.7 seconds for 1,000 generated CSS, SCSS and Vue files with 71,515 findings, Node start-up included; the earlier guess was 2 to 3 seconds). 10 seconds is the laptop target. `npm run bench` (G4-07) checks it in CI, where it fails above 15 seconds because CI runners are slower than laptops. It also fails if any generated file is skipped, so a broken fixture cannot pass as fast.
 - NFR-P2 The playground returns a report for 500 lines of code in under 500 ms.
 - NFR-P3 Memory stays under 512 MB for the 1,000-file benchmark.
 

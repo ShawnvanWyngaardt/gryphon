@@ -74,3 +74,4 @@ Allowed since PR 4 (CI) merged and its four checks became required on `main`. Ea
 | 2026-11-17 | #17 | Gate 4 re-ordered by user value, as Shawn decided in PR 15; D1 to D3 marked approved; new ticket G4-23 (scheduler re-run). Docs only. |
 | 2026-11-17 | #23 | Windows: `\` accepted in config globs and paths; new "Tests on Windows (Node 24)" CI job (review of PR 21). |
 | 2026-11-17 | #24 | README section "Token files and local redefinitions" (review of PR 22); documents the per-block rule in .vue files. Docs only. |
+| 2026-11-22 | #28 | G4-07 benchmark: 1,000 generated files timed in CI (limit 15 s, heap 512 MB, no skipped files); measured 1.3 to 1.7 s. SPEC NFR-P1 records the measurement. |
