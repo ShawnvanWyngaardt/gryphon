@@ -36,6 +36,6 @@
     "@google/design.md": {
       "zod": "4.6.7"
     },
-    "postcss": "8.5.32"
+    "postcss": "8.5.33"
   }
 }
