@@ -135,3 +135,4 @@ Moved out of v1 in the Gate 1 review. Details in `docs/SPEC.md` section 5.10. No
 - Separate docs site.
 - Font weight, line height and letter spacing checks.
 - Svelte, Astro and plain HTML. SARIF output.
+- Warn about a misspelled ignore comment, such as `gryphon-ignore-nextline` (Shawn, review of PR 27). Not urgent: the finding stays visible, so nothing is hidden.

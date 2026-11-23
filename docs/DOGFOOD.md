@@ -1,9 +1,87 @@
-# Dogfooding: G3-11
+# Dogfooding
+
+Real runs of gryphon on real projects, newest first. Each run says what the tool got right, what it got wrong, and what it changed in the backlog.
+
+## G4-23: club shift scheduler with its own DESIGN.md
+
+Date: 23 November 2026. CLI: `main` after PR 27 (Vue, D1 to D3, config file and ignore comments). Scheduler commit: `e310ba2`.
+
+### Summary
+
+- **This is the first run against the project's own DESIGN.md,** not one I derived. I changed nothing in it for this run.
+- **28 files checked, 6,408 lines, 452 findings (150 errors, 302 warnings), in about 390 ms.** All 25 Vue files were read, with all 24 `<style>` blocks. In G3-11 the tool could read 2 files and found 10 problems.
+- **Every position is exact.** A script checked that all 452 findings point at their value in the source line. 452 of 452 did.
+- **No false positives in the sense of G3-11:** the tool never misread the code. But many findings are correct and still not worth acting on, and the reasons are below.
+- **The big wins:**
+  - **D3 works.** The 20 local colour variables in `HeroSection.vue`, `HowItWorks.vue` and `ProjectAbout.vue` are all reported. That was the most important gap in G3-11.
+  - **148 spacing warnings can be fixed today:** the value is a `--space-*` variable that already exists in `main.css`.
+- **The big problem:** **120 font size warnings cannot be acted on.** DESIGN.md has a type scale, but no CSS variable defines it, so "use the token instead" points at nothing. This is the main input for G4-05 (suggested fixes).
+
+### Which file is the DESIGN.md
+
+The scheduler repo has two:
+
+| File | Front matter | Result |
+| --- | --- | --- |
+| `design.md` | None: prose only | `No design tokens found in DESIGN.md`, exit 2 |
+| `DESIGN.draft.md` | Colours, typography, radius, spacing | The run below |
+
+`DESIGN.draft.md` and the repo's `gryphon.config.json` (with `tokenSources` for `main.css` and `coordinator.css`) came in the same commit, so I used the draft. The prose of the two files is the same.
+
+Two things a first-time user would hit:
+
+- `gryphon check` with no `--design` looks for `DESIGN.md`. On Linux it does not find `design.md`, and the config has no `design` field. The error is clear, but it does not mention the file that is there.
+- `No design tokens found` does not say that tokens go in YAML front matter. A user who wrote a careful prose DESIGN.md, as Shawn did, gets no hint why.
+
+### Results by category
+
+| Category | Errors (`off-token`) | Warnings (`raw-token-value`) | Verdict |
+| --- | --- | --- | --- |
+| Colour | 17 | 21 | TP. Errors are near-copies of tokens (`#f8f5fb`, `#f7f5fb`), alpha variants and untokened colours such as `#053b2a`. 18 of 21 warnings have a CSS variable with the same value. |
+| Font family | 0 | 2 | TP, low value. `'Inter'` and `"Roboto Mono"` are tokens, but there is no `--font-body` variable to use instead. |
+| Font size | 15 | 120 | Errors are TP (sizes off the scale, such as `19px`, `22px`, `0.85rem`). **Warnings are correct but not actionable:** no CSS variable defines a font size. |
+| Spacing | 96 | 151 | 148 warnings are actionable (`--space-*` exists). 12 errors are `20px`, which the prose allows but the YAML does not list. 5 errors are `top` and `left` offsets. The rest are real drift (`10px`, `6px`, `14px`, `28px`, `36px`). |
+| Radius | 22 | 8 | 16 errors are `4px`, `12px` and `14px`: the prose describes them (button and input corners), the YAML does not. The other 6 are real drift. |
+
+Findings per file: `WeekView.vue` 50, `MemberList.vue` 46, `HowItWorks.vue` 39, `coordinator.css` 36, `OverviewView.vue` 36, `HeroSection.vue` 32, and 18 more files with 1 to 27 each.
+
+### What the tool got wrong or could do better
+
+These are product findings, not bugs in the scanner. None is fixed in this PR.
+
+1. **Two palettes, one token list.** The scheduler has a member palette and a coordinator palette, and its DESIGN.md says "never mix them". gryphon has no idea of scope, so the nearest token can come from the wrong side. Example: `--hero-muted: #6b5d73` in `HeroSection.vue`, which uses the plum palette, is matched to the coordinator token `colors.muted`, and `#f8f5fb` to the coordinator `colors.bg` instead of the member `color-bg`. Following that advice would break the project's own rule.
+2. **Font size tokens without CSS variables** (120 warnings). The DESIGN.md token exists, the CSS variable does not. Suggested fixes (G4-05) need to know whether a variable exists before they suggest one.
+3. **AC3.3's default naming would give wrong fixes here.** AC3.3 says a suggested fix names the CSS variable the way `@google/design.md export --format css-tailwind` would. For this DESIGN.md that export gives `--color-navy`, `--color-color-bg` and `--text-secondary`, but the project uses `--navy`, `--color-bg` and no font size variables. Worse, the export's `--color-bg` is the coordinator `#f7f8fa`, while the project's own `--color-bg` is the member `#fcf7ff`. A fix saying "use `var(--color-bg)`" would change the colour. G4-05 needs a decision before it starts (see STATUS).
+4. **Equal values, one name.** `#fff` is reported as `colors.surface`, but on a navy button the right token is `colors.on-navy`, which has the same value. The matcher names the first token it finds.
+5. **Offsets count as spacing.** SPEC FR2 puts `top`, `left`, `right`, `bottom` and `inset` under spacing. Here that gave 5 errors for optical alignment (`left: 23px`, `top: 2px`), and one even has a comment explaining the value. That is the case ignore comments (G4-03) are for.
+6. **Missing-file hints**, from the section above: mention a `design.md` with another case, and explain front matter when no tokens are found.
+
+### For Shawn as the scheduler's owner
+
+Not gryphon work, but the run found these in the scheduler's design system:
+
+- The YAML is missing values the prose allows: spacing `20px`, and radius `4px`, `12px` and `14px`. Adding them removes 28 errors.
+- `colors.danger` (`#C62828`) has no CSS variable, so `CheckInShift.vue` and `coordinator.css` hard-code it.
+- 3 Vue files define 10 local variables that repeat 6 token colours (`--hero-orange`, `--how-plum` and so on), instead of using the existing variables. One of them, `--how-blue`, repeats the coordinator `--navy`.
+- `gryphon.config.json` could set `"design": "DESIGN.draft.md"`, so a plain `gryphon check` works.
+
+### How to repeat this run
+
+From the scheduler's root, at commit `e310ba2`, with gryphon built from `main`:
+
+```bash
+node /path/to/gryphon/packages/gryphon-designmd/dist/src/cli/main.js check --design DESIGN.draft.md --format json
+```
+
+Counts in this section were made from that JSON by script, not typed by hand.
+
+## G3-11: first run on three projects
+
 
 Date: 17 November 2026. CLI version: `gryphon-designmd` 0.0.0 at the merge of PR 14, built locally.
 The CLI reads `.css` and `.scss` only, until Vue support lands in G4-01.
 
-## Summary
+### Summary
 
 - **3 projects, 13 files, about 3,400 lines of CSS, 164 findings.** No crashes, no skipped files. Every position I spot-checked (all 11 scheduler findings and 10 VitePress findings) points at the right line and column.
 - **35 findings were false positives, and both causes are fixed in this PR:**
@@ -18,7 +96,7 @@ The CLI reads `.css` and `.scss` only, until Vue support lands in G4-01.
 
 Verdicts used below: **TP** (true positive: real drift), **TP, low value** (correct under the spec, but not worth acting on), **FP** (false positive: the tool was wrong).
 
-## How the runs were done
+### How the runs were done
 
 None of the three projects has a real DESIGN.md:
 - this repo has one, but no CSS yet;
@@ -34,15 +112,15 @@ The derived files are in `docs/dogfood/`, each with its source file, commit and 
 | [club-shift-scheduler](https://github.com/ShawnvanWyngaardt/club-shift-scheduler) | `50645ff` | 2 (`main.css`, `utilities.scss`) | `docs/dogfood/club-shift-scheduler.DESIGN.md`, from `frontend/src/assets/main.css` |
 | [vuejs/vitepress](https://github.com/vuejs/vitepress) (MIT) | `40b2e09` | 11 (default theme styles) | `docs/dogfood/vitepress.DESIGN.md`, from `src/client/theme-default/styles/vars.css` |
 
-## Results per project
+### Results per project
 
-### This repo
+#### This repo
 
 - **0 files checked.** The playground, our first CSS, arrives in Gate 4.
 - **3 DESIGN.md warnings**, for our three `borderColor` component properties. These are correct: Google's linter gives the same three (PR 9).
 - **Re-run when the playground exists (G4-10),** and from then on in CI (FR9, G4-14).
 
-### Club shift scheduler
+#### Club shift scheduler
 
 - **Not testable until G4-01:** almost all the styles live in Vue files: 21 `<style scoped>` blocks, 1,222 lines. The CLI could only read `main.css` (435 lines) and `utilities.scss` (51 lines).
 - **Colours are well disciplined in the CSS the tool can read.** Outside `:root`, every colour goes through `var()`. 0 colour findings, and I found no missed colours by hand.
@@ -58,13 +136,13 @@ The derived files are in `docs/dogfood/`, each with its source file, commit and 
   - 8 repeat a token under a new name, for example `--how-orange: #f34213` is `--color-accent-secondary`.
   - The other 12 use 7 colours that are not tokens. Some are near-copies of tokens: `#f8f5fb` and `#f7f5fb` against the token `#fcf7ff`.
 
-### VitePress
+#### VitePress
 
 - **0 colour findings.** VitePress routes every colour through its `--vp-c-*` variables, and the tool correctly stays quiet.
 - **34 false positives, all in `fonts.css`:** `font-family` inside `@font-face` blocks. Now skipped.
 - **119 spacing, radius and font size findings, every one saying "DESIGN.md defines no ... values".** VitePress has no tokens for these categories, so this is correct by the rules, but it is noise. See D2.
 
-## Tuning done in this PR
+### Tuning done in this PR
 
 | Change | Why | Effect |
 | --- | --- | --- |
@@ -73,7 +151,7 @@ The derived files are in `docs/dogfood/`, each with its source file, commit and 
 
 Both changes have tests written first. After tuning: the scheduler has 10 findings, VitePress 119.
 
-## Decisions for Shawn
+### Decisions for Shawn
 
 **All three approved by Shawn in PR 15 (17 November 2026).** They are backlog tickets G4-20 (D1), G4-21 (D2) and G4-22 (D3), scheduled straight after G4-01. The re-run is G4-23, after Shawn writes a real DESIGN.md for the scheduler.
 
@@ -96,7 +174,7 @@ These change approved behaviour, so I did not make them myself.
 - **Recommendation:** skip definitions only in token source files. Those come from config (G4-04), defaulting to files with a `:root` block that defines tokens. Elsewhere, check them like any other value.
 - This is the single change that would most improve real-world results.
 
-## Re-run plan
+### Re-run plan
 
 | When | What |
 | --- | --- |
@@ -107,11 +185,11 @@ These change approved behaviour, so I did not make them myself.
 
 The scheduler is also the first project that should get a **real** DESIGN.md. Shawn, as its owner, is the right person to write it: you are the target user, and your experience writing it is case study material.
 
-## Every finding
+### Every finding
 
 Generated from the JSON output of the run before tuning, so no row is typed by hand.
 
-### Club shift scheduler: all findings (before tuning)
+#### Club shift scheduler: all findings (before tuning)
 
 | # | Where | Property | Value | Verdict | Why |
 | --- | --- | --- | --- | --- | --- |
@@ -127,7 +205,7 @@ Generated from the JSON output of the run before tuning, so no row is typed by h
 | 10 | `frontend/src/assets/main.css:191:18` | `border-radius` | `4px` | TP | 4px radius; the tokens have 8px, 16px and 999px. |
 | 11 | `frontend/src/assets/main.css:204:15` | `margin-top` | `-2px` | TP, low value | A 2px optical nudge on a checkbox tick. Correct, but rarely worth a token. |
 
-### VitePress: all findings (before tuning)
+#### VitePress: all findings (before tuning)
 
 | # | Where | Property | Value | Verdict | Why |
 | --- | --- | --- | --- | --- | --- |
