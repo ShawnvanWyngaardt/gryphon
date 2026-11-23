@@ -29,7 +29,7 @@ Last updated: 2026-11-23
 - G4-03 ignore comments (merged, PR 27, approved by Shawn): `gryphon-ignore-next-line` and `gryphon-ignore-file` in CSS, SCSS and HTML comments; every suppressed finding is counted in `summary.suppressed`. Per-block `gryphon-ignore-file` in Vue agreed; the misspelled-directive warning went to Later in BACKLOG. Written tests first.
 - G4-07 benchmark (merged, minor PR 28): 1,000 generated files checked in CI in 1.3 to 1.7 s, against a 15 s limit and a 512 MB heap.
 - G4-18 CONTRIBUTING.md (merged, minor PR 29), including the `schemaVersion` bump rule.
-- G4-23 scheduler re-run (this PR): 28 files, 452 findings, all positions exact, about 390 ms. Found that AC3.3's naming would give wrong fixes on this project. Details in `docs/DOGFOOD.md`.
+- G4-23 scheduler re-run (in review, PR 34): 28 files, 452 findings, all positions exact, about 390 ms. Found that AC3.3's naming would give wrong fixes on this project. Details in `docs/DOGFOOD.md`.
 
 ## Next
 
